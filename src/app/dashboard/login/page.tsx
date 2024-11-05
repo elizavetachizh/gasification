@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Box,
   Button,
@@ -17,18 +17,16 @@ import {
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     // Логика авторизации
     console.log("Logging in with:", email, password);
-    router.push("profile");
   };
 
   const handleClickShowPassword = () => {
@@ -46,6 +44,7 @@ export default function LoginPage() {
 
   return (
     <Container component="main" maxWidth="xs">
+      <CssBaseline />
       <Box
         sx={{
           marginTop: 8,
