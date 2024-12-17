@@ -1,3 +1,4 @@
+"use client";
 import * as React from "react";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -9,15 +10,37 @@ import AccountCircle from "@mui/icons-material/AccountCircle";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
 import Badge from "@mui/material/Badge";
-import NotificationsIcon from '@mui/icons-material/Notifications';
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import { useAppDispatch, useAppSelector } from "@/src/lib/hooks";
+import { resetState } from "@/src/lib/slices/authSlice";
+import {
+  accountsApi,
+  useGetUserQuery,
+} from "@/src/lib/features/accounts/accountsApi";
+import { RootState } from "@/src/lib/store";
 export default function AppBarProfile() {
+  const accessToken = useAppSelector(
+    (state: RootState) => state.auth.accessToken,
+  );
+  const { data: userData } = useGetUserQuery(undefined, {
+    skip: !accessToken,
+  });
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
+  const dispatch = useAppDispatch();
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    // Сбрасываем состояние
+    dispatch(resetState());
+    localStorage.removeItem("refreshToken");
+    // Очищаем кэш запросов API
+    dispatch(accountsApi.util.resetApiState());
   };
 
   return (
@@ -36,6 +59,7 @@ export default function AppBarProfile() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Персональная страница
           </Typography>
+          <Typography component="div">{userData?.name}</Typography>
           <IconButton
             size="large"
             aria-label="show 17 new notifications"
@@ -71,8 +95,7 @@ export default function AppBarProfile() {
               open={Boolean(anchorEl)}
               onClose={handleClose}
             >
-              <MenuItem onClick={handleClose}>Религиозная община</MenuItem>
-              <MenuItem onClick={handleClose}>Выйти</MenuItem>
+              <MenuItem onClick={handleLogout}>Выйти</MenuItem>
             </Menu>
           </div>
         </Toolbar>

@@ -1,10 +1,9 @@
 "use client";
 import {
-  alpha,
   Box,
   Checkbox,
   CircularProgress,
-  IconButton,
+  Grid,
   Paper,
   Tab,
   Table,
@@ -14,39 +13,29 @@ import {
   TableHead,
   TableRow,
   Tabs,
-  Toolbar,
-  Tooltip,
-  Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
-  OrderOriginal,
-  useAgreedOrderMutation,
-  useCanceledOrderMutation,
+  useAcceptedOrderMutation,
   useGetOrdersQuery,
-  useRejectedOrderMutation,
+  useOnConfirmedOrderMutation,
 } from "@/src/lib/features/orders/ordersApi";
-import SplitButton from "@/src/components/tableWithPagination/buttonGroup";
+import Button from "@mui/material/Button";
 import { useHandleSelected } from "@/src/hooks/useHandleSelected";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { useSelector } from "react-redux";
-import { RootState } from "@/src/lib/store";
-import dayjs from "dayjs";
-import { DateConversion, useDateConversion } from "@/src/utils/dateConversion";
+import FormDialog from "@/src/components/dialogs/formDialog";
+import { DateConversion } from "@/src/utils/dateConversion";
 
-export default function TableWithPagination() {
+export default function TableDashboard() {
   const [status, setStatus] = useState("created");
-  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
   const {
     data: orders = [],
     isLoading,
     isFetching,
-  } = useGetOrdersQuery(status, { skip: !accessToken });
-  const [deleteOrder] = useCanceledOrderMutation();
-  const [agreeOrder] = useAgreedOrderMutation();
-  const [rejectOrder] = useRejectedOrderMutation();
+  } = useGetOrdersQuery(status);
+  const [acceptOrder] = useAcceptedOrderMutation();
+  const [confirmOrder] = useOnConfirmedOrderMutation();
+  const [date, setDate] = useState("");
   const [selected, setSelected] = useState<number[]>([]);
-
   const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked && orders) {
       setSelected(orders.map((order) => order.id));
@@ -61,20 +50,18 @@ export default function TableWithPagination() {
         : [...prevSelected, id],
     );
   };
-  const { handleAction: handleDeleteSelected } = useHandleSelected(
-    deleteOrder,
-    "Выбранные заявки удалены",
-  );
-  const { handleAction: handleAgreeSelected } = useHandleSelected(
-    agreeOrder,
+
+  const { handleAction: handleAcceptSelected } = useHandleSelected(
+    acceptOrder,
     "Выбранные заявки приняты",
   );
 
-  const handleRejectSelected = async () => {
+  const handleConfirmSelected = async () => {
     try {
-      await Promise.all(selected.map((id) => rejectOrder(id).unwrap()));
+      await Promise.all(
+        selected.map((id) => confirmOrder({ id, on_date: date }).unwrap()),
+      );
       setSelected([]);
-      alert("Выбранные заявки приняты");
     } catch (err) {
       console.error("Ошибка при удалении заявок:", err);
     }
@@ -84,14 +71,12 @@ export default function TableWithPagination() {
     setStatus(newValue);
   };
 
-  const getOnDateForStatus = (
-    statusHistory: OrderOriginal["status_history"],
-  ) => {
-    const statusEntry = statusHistory?.find(
-      (entry) => entry.status === "on_confirm",
-    );
-    return statusEntry?.on_date || null;
-  };
+  const showOrdersCount = useCallback(
+    (selectedStatus: string) => {
+      return selectedStatus === status ? `(${orders?.length})` : "";
+    },
+    [orders?.length, status],
+  );
 
   return (
     <React.Fragment>
@@ -102,67 +87,52 @@ export default function TableWithPagination() {
       ) : (
         <>
           <Tabs value={status} onChange={handleChange} centered>
-            <Tab value={"created"} label="Новые заявки" />
-            <Tab value={"on_confirm"} label="Предложен перенос заявки" />
-            <Tab value={"accepted"} label="Принятые заявки" />
+            <Tab
+              value={"created"}
+              label={`Новые заявки ${showOrdersCount("created")}`}
+            />
+            <Tab
+              value={"on_confirm"}
+              label={`Заявки на согласовании ${showOrdersCount("on_confirm")}`}
+            />
+            <Tab
+              value={"accepted"}
+              label={`Принятые заявки ${showOrdersCount("accepted")}`}
+            />
           </Tabs>
           {isFetching ? (
             <CircularProgress />
           ) : (
             <>
-              {!!selected?.length && (
-                <React.Fragment>
-                  {status === "created" && (
-                    <Toolbar
-                      sx={[
-                        {
-                          pl: { sm: 2 },
-                          pr: { xs: 1, sm: 1 },
-                        },
-                        selected.length > 0 && {
-                          bgcolor: (theme) =>
-                            alpha(
-                              theme.palette.primary.main,
-                              theme.palette.action.activatedOpacity,
-                            ),
-                        },
-                      ]}
-                    >
-                      <Typography
-                        sx={{ flex: "1 1 100%" }}
-                        color="inherit"
-                        variant="subtitle1"
-                        component="div"
-                      >
-                        {selected.length} выбрано
-                      </Typography>
+              {!!selected?.length && status === "created" && (
+                <Grid
+                  container
+                  direction="row"
+                  sx={{
+                    justifyContent: "flex-end",
+                    alignItems: "flex-end",
+                  }}
+                >
+                  <Button
+                    variant="contained"
+                    color="success"
+                    onClick={() => handleAcceptSelected(selected, setSelected)}
+                  >
+                    Принять
+                  </Button>
 
-                      <Tooltip title="Отменить заявку">
-                        <IconButton>
-                          <DeleteIcon
-                            onClick={() =>
-                              handleDeleteSelected(selected, setSelected)
-                            }
-                          />
-                        </IconButton>
-                      </Tooltip>
-                    </Toolbar>
-                  )}
-                  {status === "on_confirm" && (
-                    <SplitButton
-                      onAgreeAction={handleAgreeSelected}
-                      onRejectAction={handleRejectSelected}
-                      selected={selected}
-                      setSelected={setSelected}
-                    />
-                  )}
-                </React.Fragment>
+                  <FormDialog
+                    date={date}
+                    setDateAction={setDate}
+                    handleConfirmSelectedAction={handleConfirmSelected}
+                  />
+                </Grid>
               )}
               <TableContainer component={Paper} sx={{ maxHeight: 440 }}>
                 <Table stickyHeader>
                   <TableHead>
                     <TableRow>
-                      {status !== "accepted" && (
+                      {status === "created" && (
                         <TableCell>
                           <Checkbox
                             indeterminate={
@@ -180,11 +150,10 @@ export default function TableWithPagination() {
                       <TableCell>№</TableCell>
                       <TableCell>Дата подачи</TableCell>
                       <TableCell>Дата вызова представителя</TableCell>
-                      {status === "on_confirm" && (
-                        <TableCell>Предлагаемая дата вызова</TableCell>
+                      {status === "accepted" && (
+                        <TableCell>Соглавсованная дата</TableCell>
                       )}
                       <TableCell>ФИО заявителя</TableCell>
-
                       <TableCell>Код объекта</TableCell>
                       <TableCell>Вид производимых работ</TableCell>
                     </TableRow>
@@ -199,12 +168,12 @@ export default function TableWithPagination() {
                           tabIndex={-1}
                           selected={selected.includes(order.id)}
                         >
-                          {status !== "accepted" && (
+                          {status === "created" && (
                             <TableCell padding="checkbox">
                               <Checkbox
                                 color="primary"
                                 checked={selected.includes(order.id)}
-                                onChange={() => handleSelectOne(+order.id)}
+                                onChange={() => handleSelectOne(order.id)}
                                 inputProps={{
                                   "aria-labelledby": labelId,
                                 }}
@@ -218,10 +187,11 @@ export default function TableWithPagination() {
                           <TableCell>
                             {DateConversion(order.selected_date)}
                           </TableCell>
-                          {status === "on_confirm" && (
+                          {status === "accepted" && (
                             <TableCell>
-                              {getOnDateForStatus(order.status_history) ||
-                                "Нет данных"}
+                              {order?.on_date
+                                ? DateConversion(order?.on_date)
+                                : ""}
                             </TableCell>
                           )}
                           <TableCell>{order.applicant}</TableCell>

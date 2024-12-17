@@ -1,39 +1,53 @@
 "use client";
+import { Typography, Paper, Button, Toolbar, Box } from "@mui/material";
+import TableDashboard from "@/src/components/tableDashboard";
+import * as React from "react";
+import { useAppDispatch } from "@/src/lib/hooks";
+import { resetState } from "@/src/lib/slices/authSlice";
+import { accountsApi } from "@/src/lib/features/accounts/accountsApi";
+import AppBarWithDrawerComponent from "@/src/components/appBarWithDrawer";
 
-import { useState } from "react";
-import { Toolbar, Typography, Paper, Tabs, Tab } from "@mui/material";
-import TableWithPagination from "@/src/components/tableWithPagination";
 export default function DashboardPage() {
-  const [value, setValue] = useState(0);
+  const dispatch = useAppDispatch();
 
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
+  const handleClose = () => {
+    // Сбрасываем состояние
+    dispatch(resetState());
+    localStorage.removeItem("refreshToken");
+    // Очищаем кэш запросов API
+    dispatch(accountsApi.util.resetApiState());
   };
+
   return (
     <>
-      <Toolbar />
-      <Typography variant="h4" gutterBottom>
-        Персональная информация
-      </Typography>
-      <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-        <Typography variant="body1">Подразделение: СЗ</Typography>
-        <Typography variant="body1">Табельный номер: 10858</Typography>
-        <Typography variant="body1">Email: johndoe@example.com</Typography>
-        <Typography variant="body1">
-          Контактный телефон: +375444640092
-        </Typography>
-        <Typography variant="body1">ФИО: Иванов Иван Иванович</Typography>
-      </Paper>
+      <Box sx={{ display: "flex" }}>
+        <AppBarWithDrawerComponent />
+        <Box
+          component="main"
+          sx={{ flexGrow: 1, bgcolor: "background.default", p: 3 }}
+        >
+          <Toolbar />
+          <Typography variant="h4" gutterBottom>
+            Персональная информация
+          </Typography>
+          <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+            <Typography variant="body1">Подразделение: СЗ</Typography>
+            <Typography variant="body1">Табельный номер: 10858</Typography>
+            <Typography variant="body1">Email: johndoe@example.com</Typography>
+            <Typography variant="body1">
+              Контактный телефон: +375444640092
+            </Typography>
+            <Typography variant="body1">ФИО: Иванов Иван Иванович</Typography>
+            <Button onClick={handleClose}>Выйти</Button>
+          </Paper>
 
-      <Typography variant="h5" gutterBottom>
-        Список заявок
-      </Typography>
-      <Tabs value={value} onChange={handleChange} centered>
-        <Tab label="Item One" />
-        <Tab label="Item Two" />
-        <Tab label="Item Three" />
-      </Tabs>
-      <TableWithPagination />
+          <Typography variant="h5" gutterBottom>
+            Список заявок
+          </Typography>
+
+          <TableDashboard />
+        </Box>
+      </Box>
     </>
   );
 }

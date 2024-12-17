@@ -7,12 +7,28 @@ import MuiAppBar from "@mui/material/AppBar";
 import { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar/AppBar";
 import { drawerWidth } from "@/src/const";
 import { IAppBar } from "@/src/interfaces";
+import {
+  accountsApi,
+  useGetUserQuery,
+} from "@/src/lib/features/accounts/accountsApi";
+import { RootState } from "@/src/lib/store";
+import { useAppDispatch, useAppSelector } from "@/src/lib/hooks";
+import { DarkMode, LightMode } from "@mui/icons-material";
+import { useThemeModeContext } from "@/src/context/theme";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import { resetState } from "@/src/lib/slices/authSlice";
 
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
 }
 
 const AppBarComponent: React.FC<IAppBar> = ({ open, setOpen }) => {
+  const accessToken = useAppSelector(
+    (state: RootState) => state.auth.accessToken,
+  );
+  const { data: userData } = useGetUserQuery(undefined, { skip: !accessToken });
+
   const AppBar = styled(MuiAppBar, {
     shouldForwardProp: (prop) => prop !== "open",
   })<AppBarProps>(({ theme }) => ({
@@ -38,6 +54,35 @@ const AppBarComponent: React.FC<IAppBar> = ({ open, setOpen }) => {
   const handleDrawerOpen = () => {
     setOpen(true);
   };
+
+  // Кнопка переключения темы
+  const ThemeToggleButton: React.FC = () => {
+    const { toggleTheme, mode } = useThemeModeContext();
+    return (
+      <IconButton onClick={toggleTheme} color="inherit">
+        {mode === "dark" ? <LightMode /> : <DarkMode />}
+      </IconButton>
+    );
+  };
+
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const dispatch = useAppDispatch();
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    // Сбрасываем состояние
+    dispatch(resetState());
+    localStorage.removeItem("refreshToken");
+    // Очищаем кэш запросов API
+    dispatch(accountsApi.util.resetApiState());
+  };
+
   return (
     <AppBar open={open} position="fixed">
       <Toolbar>
@@ -55,10 +100,32 @@ const AppBarComponent: React.FC<IAppBar> = ({ open, setOpen }) => {
         >
           <MenuIcon />
         </IconButton>
-        <Avatar sx={{ mr: 2 }}>U</Avatar>
+        <Avatar sx={{ mr: 2 }} onClick={handleMenu}>
+          U
+        </Avatar>
+        <Menu
+          id="menu-appbar"
+          anchorEl={anchorEl}
+          anchorOrigin={{
+            vertical: "top",
+            horizontal: "right",
+          }}
+          keepMounted
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "right",
+          }}
+          open={Boolean(anchorEl)}
+          onClose={handleClose}
+        >
+          <MenuItem onClick={handleLogout}>Выйти</MenuItem>
+        </Menu>
         <Typography variant="h6" noWrap>
-          Welcome, John Doe
+          {userData?.name}
         </Typography>
+        <div>
+          <ThemeToggleButton />
+        </div>
       </Toolbar>
     </AppBar>
   );

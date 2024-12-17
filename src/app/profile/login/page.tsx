@@ -8,27 +8,38 @@ import {
   TextField,
   Typography,
   Avatar,
-  CssBaseline,
   InputAdornment,
   IconButton,
   FormControl,
   InputLabel,
   OutlinedInput,
+  Alert,
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { useLoginAccountMutation } from "@/src/lib/features/accounts/accountsTokenApi";
+import { useAppDispatch } from "@/src/lib/hooks";
+import { setTokens } from "@/src/lib/slices/authSlice";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [loginAccount, { isLoading, error, isSuccess }] =
+    useLoginAccountMutation();
+  const dispatch = useAppDispatch();
   const [password, setPassword] = useState("");
+  const [login, setLogin] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Логика авторизации
-    console.log("Logging in with:", email, password);
-    router.push("profile");
+    try {
+      const data = await loginAccount({ password, login }).unwrap();
+      dispatch(setTokens(data));
+      setLogin("");
+      setPassword("");
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleClickShowPassword = () => {
@@ -43,7 +54,7 @@ export default function LoginPage() {
   ) => {
     event.preventDefault();
   };
-
+  console.log(error);
   return (
     <Container component="main" maxWidth="xs">
       <Box
@@ -58,21 +69,21 @@ export default function LoginPage() {
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Login
+          Авторизация
         </Typography>
         <Box component="form" onSubmit={handleLogin} noValidate sx={{ mt: 1 }}>
           <TextField
             margin="normal"
             required
             fullWidth
-            id="email"
-            label="Email Address"
+            id="login"
+            label="Логин"
             name="email"
-            type={"email"}
-            autoComplete="email"
+            type={"text"}
+            autoComplete="login"
             autoFocus
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={login}
+            onChange={(e) => setLogin(e.target.value)}
           />
 
           <FormControl variant="outlined" fullWidth>
@@ -112,10 +123,22 @@ export default function LoginPage() {
             type="submit"
             fullWidth
             variant="contained"
+            disabled={isLoading || !login || !password}
             sx={{ mt: 3, mb: 2 }}
           >
-            Войти
+            {isLoading ? "Пожалуйста, подождите" : "Войти"}
           </Button>
+          {error && error?.status === 401 && (
+            <Alert severity="error">Неверный логин либо пароль</Alert>
+          )}
+          <Box sx={{ textAlign: "center" }}>
+            <Button
+              variant="text"
+              onClick={() => router.push(`/profile/login/password-reset`)}
+            >
+              Забыли пароль?
+            </Button>
+          </Box>
         </Box>
       </Box>
     </Container>

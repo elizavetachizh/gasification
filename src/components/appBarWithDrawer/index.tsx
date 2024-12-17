@@ -4,7 +4,7 @@ import AppBarComponent from "@/src/components/appBar";
 import DrawerComponent from "@/src/components/drawerComponent";
 
 export default function AppBarWithDrawerComponent() {
-  const [open, setOpen] = useState<boolean>(false);
+  const [open, setOpen] = useState<boolean>(true);
   return (
     <>
       {/* AppBar */}

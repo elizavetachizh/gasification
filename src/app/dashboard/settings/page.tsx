@@ -1,63 +1,101 @@
 "use client";
 import dayjs, { Dayjs } from "dayjs";
 import Badge from "@mui/material/Badge";
+import {
+  LocalizationProvider,
+  DateCalendar,
+  PickersDay,
+} from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { PickersDay, PickersDayProps } from "@mui/x-date-pickers/PickersDay";
-import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
+import { PickersDayProps } from "@mui/x-date-pickers/PickersDay";
 import { DayCalendarSkeleton } from "@mui/x-date-pickers/DayCalendarSkeleton";
-import React, { useState } from "react";
-import { Box, Button, TextField, Toolbar, Typography } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import {
+  Box,
+  Button,
+  FormControl,
+  FormLabel,
+  Paper,
+  TextField,
+  Typography,
+} from "@mui/material";
+import {
+  ConfigStatsInterface,
+  useCreateExceptionDateMutation,
+  useGetConfigStatsQuery,
+} from "@/src/lib/features/config/exceptionDateApi";
+import "dayjs/locale/ru";
 
-const initialValue = dayjs("2024-11-17");
-type Event = {
-  date: string;
-  icon?: number;
-};
+const initialValue = dayjs(new Date());
 type DayData = Record<string, number>;
 
 export default function SettingPage() {
-  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
+  const [createExceptionDate] = useCreateExceptionDateMutation();
+  const [selectedDate, setSelectedDate] = useState<string>("");
   const [dayValues, setDayValues] = useState<DayData>({});
   const [inputValue, setInputValue] = useState<number>(0);
-
+  const [monthBoundaries, setMonthBoundaries] = useState<{
+    startOfMonth: string;
+    endOfMonth: string;
+  }>({
+    startOfMonth: dayjs().startOf("month").format("YYYY-MM-DD"),
+    endOfMonth: dayjs().endOf("month").format("YYYY-MM-DD"),
+  });
+  const { data: configStatsInfo, isLoading } = useGetConfigStatsQuery({
+    start_date: monthBoundaries.startOfMonth,
+    end_date: monthBoundaries.endOfMonth,
+  });
   // Обработка изменения значения в текстовом поле
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseInt(event.target.value) || 0;
     setInputValue(newValue);
-
-    if (selectedDate) {
-      const dateKey = selectedDate.format("YYYY-MM-DD");
-      setDayValues((prevValues) => ({ ...prevValues, [dateKey]: newValue }));
-    }
   };
+
+  useEffect(() => {
+    if (!isLoading) {
+      // Преобразуем массив в объект
+      const values = configStatsInfo?.result?.reduce(
+        (acc: DayData, { date, order_count }: ConfigStatsInterface) => {
+          const formattedDate = dayjs(date).format("YYYY-MM-DD"); // Преобразуем дату в формат YYYY-MM-DD
+          acc[formattedDate] = order_count;
+          return acc;
+        },
+        {},
+      );
+      setDayValues(values);
+    }
+  }, [isLoading, configStatsInfo]);
 
   const renderDay = (
     props: PickersDayProps<Dayjs> & { highlightedDays?: number[] },
   ) => {
     const { day, outsideCurrentMonth, ...other } = props;
+    // Проверяем, является ли day экземпляром Dayjs
     const dateKey = day.format("YYYY-MM-DD");
-    const dayValue = dayValues[dateKey] || 0;
+    const dayValue = dayValues[dateKey] || "";
+
     return (
       <Badge
         key={day.toString()}
         overlap="circular"
         badgeContent={
-          <Box
-            sx={{
-              width: 15,
-              height: 15,
-              borderRadius: "50%",
-              backgroundColor: "grey.400",
-              color: "white",
-              fontSize: "0.65rem",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {dayValue}
-          </Box>
+          !!dayValue ? (
+            <Box
+              sx={{
+                width: 15,
+                height: 15,
+                borderRadius: "50%",
+                backgroundColor: "grey.400",
+                color: "white",
+                fontSize: "0.65rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {dayValue}
+            </Box>
+          ) : null
         }
       >
         <PickersDay
@@ -71,51 +109,83 @@ export default function SettingPage() {
 
   // Обработка выбора дня в календаре
   const handleDaySelect = (date: Dayjs | null) => {
-    setSelectedDate(date);
     if (date) {
       const dateKey = date.format("YYYY-MM-DD");
+      setSelectedDate(dateKey);
       setInputValue(dayValues[dateKey] || 0);
     }
   };
 
+  const handleCreateExceptionDate = async (
+    date: string,
+    count: number | null,
+  ) => {
+    await createExceptionDate({ on_date: date, order_count_per_day: count });
+  };
+
+  const handleMonthChange = (newMonth: Dayjs) => {
+    const startOfMonth = newMonth.startOf("month").format("YYYY-MM-DD");
+    const endOfMonth = newMonth.endOf("month").format("YYYY-MM-DD");
+    setMonthBoundaries({ startOfMonth, endOfMonth });
+  };
+
   return (
-    <>
-      <Toolbar />
-      <Typography variant="h4" gutterBottom>
-        Настройки календаря
+    <Paper sx={{ width: "70%", mb: 1, mt: 1, p: 2 }}>
+      <Typography variant="subtitle2">
+        Дополнительные настройки лимита на конкретную дату
       </Typography>
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <Box display="flex" gap={2}>
-          <Box>
+      <Box
+        display="flex"
+        gap={2}
+        component="form"
+        sx={{ "& .MuiTextField-root": { m: 1, width: "25ch" } }}
+        // noValidate
+        // autoComplete="on"
+      >
+        <Box>
+          <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ru">
             <DateCalendar
-              value={selectedDate}
+              sx={{ width: "400px", margin: "0 auto" }}
+              value={selectedDate ? dayjs(selectedDate) : null}
               onChange={handleDaySelect}
+              onMonthChange={handleMonthChange} // Добавлен обработчик изменения месяца
               defaultValue={initialValue}
               renderLoading={() => <DayCalendarSkeleton />}
               slots={{
                 day: renderDay,
               }}
             />
-          </Box>
-          <Box>
-            <Typography variant="subtitle1">
-              Введите значение для выбранного дня:
-            </Typography>
+          </LocalizationProvider>
+        </Box>
+        <Box
+          display={"flex"}
+          sx={{
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "flex-start",
+          }}
+        >
+          <FormControl>
+            <FormLabel> Введите лимит для выбранного дня:</FormLabel>
             <TextField
               size="small"
-              label="Значение"
+              label="Лимит"
               type="number"
               value={inputValue}
               onChange={handleInputChange}
               disabled={!selectedDate}
               fullWidth
             />
-            <Button variant="contained" size="small">
-              Сохранить
-            </Button>
-          </Box>
+          </FormControl>
+          <Button
+            variant="contained"
+            size="small"
+            onClick={() => handleCreateExceptionDate(selectedDate, inputValue)}
+          >
+            Сохранить
+          </Button>
         </Box>
-      </LocalizationProvider>
-    </>
+      </Box>
+    </Paper>
   );
 }

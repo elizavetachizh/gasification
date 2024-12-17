@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -8,25 +8,35 @@ import {
   TextField,
   Typography,
   Avatar,
-  CssBaseline,
   InputAdornment,
   IconButton,
   FormControl,
   InputLabel,
   OutlinedInput,
+  Alert,
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { useLoginAccountMutation } from "@/src/lib/features/accounts/accountsTokenApi";
+import { useAppDispatch } from "@/src/lib/hooks";
+import { setTokens } from "@/src/lib/slices/authSlice";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [loginAccount, { isLoading, error }] = useLoginAccountMutation();
+  const dispatch = useAppDispatch();
   const [password, setPassword] = useState("");
+  const [login, setLogin] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Логика авторизации
-    console.log("Logging in with:", email, password);
+    try {
+      const data = await loginAccount({ password, login }).unwrap();
+      dispatch(setTokens(data));
+      setLogin("");
+      setPassword("");
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleClickShowPassword = () => {
@@ -44,7 +54,6 @@ export default function LoginPage() {
 
   return (
     <Container component="main" maxWidth="xs">
-      <CssBaseline />
       <Box
         sx={{
           marginTop: 8,
@@ -57,21 +66,21 @@ export default function LoginPage() {
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Login
+          Авторизация
         </Typography>
         <Box component="form" onSubmit={handleLogin} noValidate sx={{ mt: 1 }}>
           <TextField
             margin="normal"
             required
             fullWidth
-            id="email"
-            label="Email Address"
+            id="login"
+            label="Логин"
             name="email"
-            type={"email"}
-            autoComplete="email"
+            type={"text"}
+            autoComplete="login"
             autoFocus
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={login}
+            onChange={(e) => setLogin(e.target.value)}
           />
 
           <FormControl variant="outlined" fullWidth>
@@ -111,10 +120,14 @@ export default function LoginPage() {
             type="submit"
             fullWidth
             variant="contained"
+            disabled={isLoading || !login || !password}
             sx={{ mt: 3, mb: 2 }}
           >
-            Войти
+            {isLoading ? "Пожалуйста, подождите" : "Войти"}
           </Button>
+          {error && error?.status === 401 && (
+            <Alert severity="error">Неверный логин либо пароль</Alert>
+          )}
         </Box>
       </Box>
     </Container>
