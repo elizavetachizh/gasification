@@ -1,5 +1,8 @@
 "use client";
-import { useGetClientsQuery } from "@/src/lib/features/accounts/accountsClientsApi";
+import {
+  useDeleteClientMutation,
+  useGetClientsQuery,
+} from "@/src/lib/features/accounts/accountsClientsApi";
 import {
   Box,
   Checkbox,
@@ -20,14 +23,22 @@ import React, { useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import FormCreateUserDialog from "@/src/components/dialogs/formCreateUserDialog";
 import AppBarWithDrawerComponent from "@/src/components/appBarWithDrawer";
+import ToolbarComponent from "@/src/components/toolbar";
+import AlertDialog from "@/src/components/dialogs/deleteAlertDialog";
+import { useHandleSelected } from "@/src/hooks/useHandleSelected";
 
 export default function UsersPage() {
   const { data: clients, isLoading } = useGetClientsQuery();
+  const [deleteClient] = useDeleteClientMutation();
   console.log(clients);
-  const [selected, setSelected] = useState<number>(0);
+  const [selected, setSelected] = useState<number[]>([]);
 
-  const handleSelect = (id: number) => {
-    setSelected(id);
+  const handleSelectOne = (id: number) => {
+    setSelected((prevSelected) =>
+      prevSelected.includes(id)
+        ? prevSelected.filter((clientId) => clientId !== id)
+        : [...prevSelected, id],
+    );
   };
 
   const [open, setOpen] = React.useState(false);
@@ -39,6 +50,11 @@ export default function UsersPage() {
   const handleClose = () => {
     setOpen(false);
   };
+
+  const { handleAction: handleDeleteSelected } = useHandleSelected(
+    deleteClient,
+    "Выбранные заявки удалены",
+  );
 
   return (
     <>
@@ -58,29 +74,25 @@ export default function UsersPage() {
             </Box>
           ) : (
             <Paper sx={{ width: "100%", mb: 2 }}>
-              <Toolbar
-                sx={[
-                  {
-                    pl: { sm: 2 },
-                    pr: { xs: 1, sm: 1 },
-                  },
-                ]}
-              >
-                <Typography
-                  sx={{ flex: "1 1 100%" }}
-                  variant="h6"
-                  id="tableTitle"
-                  component="div"
-                >
-                  Nutrition
-                </Typography>
+              <ToolbarComponent
+                length={selected.length}
+                content={
+                  !!selected.length ? (
+                    <AlertDialog
+                      handleDelete={() =>
+                        handleDeleteSelected(selected, setSelected)
+                      }
+                    />
+                  ) : (
+                    <Tooltip title="Добавить нового пользователя">
+                      <IconButton onClick={handleClickOpen}>
+                        <AddIcon />
+                      </IconButton>
+                    </Tooltip>
+                  )
+                }
+              />
 
-                <Tooltip title="Добавить нового пользователя">
-                  <IconButton onClick={handleClickOpen}>
-                    <AddIcon />
-                  </IconButton>
-                </Tooltip>
-              </Toolbar>
               <TableContainer component={Paper}>
                 <Table stickyHeader>
                   <TableHead>
@@ -100,13 +112,13 @@ export default function UsersPage() {
                           key={client.id}
                           hover
                           tabIndex={-1}
-                          selected={selected === client.id}
+                          selected={selected.includes(client.id)}
                         >
                           <TableCell padding="checkbox">
                             <Checkbox
                               color="primary"
-                              checked={selected === client.id}
-                              onChange={() => handleSelect(client.id)}
+                              checked={selected.includes(client.id)}
+                              onChange={() => handleSelectOne(client.id)}
                               inputProps={{
                                 "aria-labelledby": labelId,
                               }}

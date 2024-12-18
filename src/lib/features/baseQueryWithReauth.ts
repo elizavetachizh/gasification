@@ -6,7 +6,10 @@ import {
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
 import { backend } from "@/src/const/backend";
-import { clearAuth, setAccessToken } from "@/src/lib/slices/authSlice";
+import {
+  clearTokens,
+  setAccessToken,
+} from "@/src/lib/slices/authSlice";
 import { RootState } from "@/src/lib/store";
 
 const baseQuery = fetchBaseQuery({
@@ -43,15 +46,17 @@ export const baseQueryWithReauth: BaseQueryFn<
       api,
       extraOptions,
     );
-
+    console.log(refreshResult);
     if (refreshResult.data) {
       const newAccessToken = (refreshResult.data as { access: string }).access;
       api.dispatch(setAccessToken(newAccessToken));
       // Повторяем оригинальный запрос с новым токеном
       result = await baseQuery(args, api, extraOptions);
+    } else if (refreshResult.error) {
+      api.dispatch(clearTokens());
     } else {
       // Выходим из системы, если обновление токена не удалось
-      api.dispatch(clearAuth());
+      api.dispatch(clearTokens());
     }
   }
 

@@ -7,11 +7,12 @@ import {
   MenuItem,
   Select,
   CircularProgress,
+  SelectChangeEvent,
 } from "@mui/material";
 import { useGetOrderTypesQuery } from "@/src/lib/features/orders/orderTypesApi";
 interface OrderTypeSelectProps {
-  value: string | null;
-  onChange: (value: string | null) => void;
+  value: number | null;
+  onChange: (value: number | null) => void;
 }
 const OrderTypeSelect: React.FC<OrderTypeSelectProps> = ({
   value,
@@ -19,16 +20,18 @@ const OrderTypeSelect: React.FC<OrderTypeSelectProps> = ({
 }) => {
   const { data, isLoading, isError, error } = useGetOrderTypesQuery();
 
-  const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    const selectedValue = event.target.value as string;
-    onChange(selectedValue || null); // Если пустое значение, то передаём `null`
+  const handleChange = (event: SelectChangeEvent<number>) => {
+    const selectedValue = event.target.value as number;
+    onChange(selectedValue); // Если пустое значение, то передаём `null`
   };
 
   if (isLoading) return <CircularProgress />;
   if (isError)
     return (
       <p style={{ color: "red" }}>
-        Ошибка: {error?.data?.message || "Не удалось загрузить виды работ"}
+        Ошибка:{" "}
+        {("data" in error && error?.data?.toString()) ||
+          "Не удалось загрузить виды работ"}
       </p>
     );
 

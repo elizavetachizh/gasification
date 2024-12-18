@@ -18,11 +18,6 @@ export default function FormCreateUserDialog({
   open,
   handleClose,
 }: FormDialogInterface) {
-  const passwordField = useFormField({
-    validate: (value) => /(?=.*[A-Za-z])(?=.*\d).{8,}/.test(value),
-    errorMessage:
-      "Пароль должен быть больше 8 символов, содержать хотя бы одну букву и одну цифру",
-  });
   const emailField = useFormField({
     validate: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
     errorMessage: "Введите корректный email",
@@ -40,10 +35,8 @@ export default function FormCreateUserDialog({
           const formData = new FormData(event.currentTarget);
           const formJson = Object.fromEntries((formData as any).entries());
           const email = formJson.email;
-          const password = formJson.password;
           createClient({
             email,
-            password,
             counterparty: 2,
           });
           handleClose();
@@ -70,28 +63,10 @@ export default function FormCreateUserDialog({
           error={emailField.error}
           helperText={emailField.helperText}
         />
-        <TextField
-          required
-          margin="dense"
-          id="password"
-          name="password"
-          label="Пароль"
-          type="password"
-          fullWidth
-          variant="standard"
-          placeholder={"Введите пароль для пользователя"}
-          value={passwordField.value}
-          onChange={passwordField.handleChange}
-          error={passwordField.error}
-          helperText={passwordField.helperText}
-        />
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Отменить</Button>
-        <Button
-          type="submit"
-          disabled={passwordField.error || emailField.error}
-        >
+        <Button type="submit" disabled={emailField.error}>
           Добавить
         </Button>
       </DialogActions>

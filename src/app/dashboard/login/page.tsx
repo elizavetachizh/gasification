@@ -125,7 +125,7 @@ export default function LoginPage() {
           >
             {isLoading ? "Пожалуйста, подождите" : "Войти"}
           </Button>
-          {error && error?.status === 401 && (
+          {error && "status" in error && error?.status === 401 && (
             <Alert severity="error">Неверный логин либо пароль</Alert>
           )}
         </Box>

@@ -1,5 +1,3 @@
-import AppBarProfile from "@/src/components/appBarProfile";
-import { Box } from "@mui/material";
 import WithAuth from "@/src/utils/withAuth";
 
 export default function ProfileLayout({
@@ -7,10 +5,5 @@ export default function ProfileLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <Box>
-      <AppBarProfile />
-      <WithAuth>{children}</WithAuth>
-    </Box>
-  );
+  return <WithAuth>{children}</WithAuth>;
 }

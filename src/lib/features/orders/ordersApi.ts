@@ -1,25 +1,28 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "@/src/lib/features/baseQueryWithReauth";
-import { Dayjs } from "dayjs";
 
 export interface Order {
-  construction_object?: string | null;
+  construction_object?: number | null;
   selected_date: string;
   applicant: string;
-  order_type?: string | null;
+  order_type?: number | null;
   status: string;
+}
+
+export interface StatusHistoryItem {
+  status: string;
+  on_date?: string; // Опциональное поле
+  created_at?: string; // Опциональное поле
 }
 
 export interface OrderOriginal
   extends Omit<Order, "construction_object" | "order_type"> {
   id: number;
   created_at: string;
+  on_date?: string;
   construction_object?: { code: string }; // Переопределяем тип
   order_type?: { order_type: string }; // Переопределяем тип
-  status_history?: {
-    status: string;
-    on_date: string;
-  }[]; // Добавляем новое свойство
+  status_history?: StatusHistoryItem[]; // Добавляем новое свойство
 }
 
 export const ordersApi = createApi({

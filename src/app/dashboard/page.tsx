@@ -1,6 +1,6 @@
 "use client";
 import { Typography, Paper, Button, Toolbar, Box } from "@mui/material";
-import TableDashboard from "@/src/components/tableDashboard";
+import TableDashboard from "../../components/table/tableDashboard";
 import * as React from "react";
 import { useAppDispatch } from "@/src/lib/hooks";
 import { resetState } from "@/src/lib/slices/authSlice";

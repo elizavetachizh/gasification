@@ -11,9 +11,9 @@ import DialogTitle from "@mui/material/DialogTitle";
 import { useState } from "react";
 
 interface FormDialogInterface {
-  date: null | string;
-  setDateAction: (value: string) => void;
-  handleConfirmSelectedAction: () => void;
+  date?: null | string;
+  setDateAction?: (value: string) => void;
+  handleConfirmSelectedAction?: () => void;
 }
 
 export default function FormDialog({
@@ -41,7 +41,9 @@ export default function FormDialog({
             component: "form",
             onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
               event.preventDefault();
-              handleConfirmSelectedAction();
+              if (handleConfirmSelectedAction) {
+                handleConfirmSelectedAction();
+              }
               handleClose();
             },
           }}
@@ -61,7 +63,9 @@ export default function FormDialog({
               fullWidth
               variant="standard"
               value={date}
-              onChange={(event) => setDateAction(event.target.value)}
+              onChange={(event) =>
+                setDateAction ? setDateAction(event.target.value) : undefined
+              }
             />
           </DialogContent>
           <DialogActions>

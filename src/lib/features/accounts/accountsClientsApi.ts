@@ -59,7 +59,7 @@ export const clientsApi = createApi({
       }),
       invalidatesTags: ["Clients"],
     }),
-    deleteClient: builder.mutation<Client, Partial<Client>>({
+    deleteClient: builder.mutation<void, number>({
       query: (id) => ({
         url: `/accounts/clients${id}/`,
         method: "DELETE",

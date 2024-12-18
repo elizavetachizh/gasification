@@ -1,6 +1,5 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "@/src/lib/features/baseQueryWithReauth";
-import { OrderOriginal } from "@/src/lib/features/orders/ordersApi";
 
 export interface ExceptionDateInterface {
   on_date: string;
@@ -15,6 +14,12 @@ export interface ConfigStatsInterface {
 export interface ConfigSetupInterface {
   order_count_per_day: number | null;
   order_count_friday: number | null;
+  time_start: string;
+  time_end: string;
+}
+
+export interface OrdersAvailableInterface {
+  status: boolean;
 }
 
 export const exceptionDateApi = createApi({
@@ -34,6 +39,12 @@ export const exceptionDateApi = createApi({
     getConfigSetup: builder.query<ConfigSetupInterface[], void>({
       query: () => ({
         url: "/orders/config/setup",
+      }),
+      providesTags: ["ExceptionDate"],
+    }),
+    getOrdersAvailable: builder.query<OrdersAvailableInterface, void>({
+      query: () => ({
+        url: "/orders/available/",
       }),
       providesTags: ["ExceptionDate"],
     }),
@@ -66,5 +77,6 @@ export const {
   useCreateExceptionDateMutation,
   useGetConfigStatsQuery,
   useGetConfigSetupQuery,
+  useGetOrdersAvailableQuery,
   usePutConfigSetupMutation,
 } = exceptionDateApi;

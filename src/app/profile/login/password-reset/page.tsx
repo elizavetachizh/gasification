@@ -1,21 +1,22 @@
 "use client";
 import {
-  Avatar,
+  Alert,
   Box,
   Button,
-  Container,
-  Stack,
+  Collapse,
+  IconButton,
   TextField,
   Typography,
 } from "@mui/material";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import React from "react";
+import React, { useState } from "react";
 import { usePasswordResetMutation } from "@/src/lib/features/accounts/accountsApi";
 import { useFormField } from "@/src/hooks/useFormField";
 import { useRouter } from "next/navigation";
+import CloseIcon from "@mui/icons-material/Close";
 
 export default function PasswordResetPage() {
-  const [passwordReset, { isLoading }] = usePasswordResetMutation();
+  const [passwordReset, { isLoading, error, isSuccess }] =
+    usePasswordResetMutation();
   const email = useFormField({
     validate: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
     errorMessage: "Введите корректный email",
@@ -28,64 +29,85 @@ export default function PasswordResetPage() {
       email.reset();
     } catch (error) {
       console.error(error);
+      email.reset();
     }
   };
+  const [open, setOpen] = useState(true);
   return (
-    <Container>
-      <Box
-        sx={{
-          marginTop: 8,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
-          <LockOutlinedIcon />
-        </Avatar>
-        <Typography component="h1" variant="h5">
-          Восстановление пароля
-        </Typography>
-        <Box
-          component="form"
-          onSubmit={handlePasswordReset}
-          noValidate
-          sx={{ mt: 1 }}
-        >
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="email"
-            label="email"
-            name="email"
-            type={"text"}
-            autoComplete="email"
-            autoFocus
-            value={email.value}
-            error={email.error}
-            onChange={email.handleChange}
-            helperText={email.helperText}
-          />
-          <Stack spacing={4} direction="row">
-            <Box>
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                sx={{ mt: 3, mb: 2 }}
+    <>
+      <Typography component="h1" variant="h5">
+        Восстановление пароля
+      </Typography>
+
+      {isSuccess && (
+        <Collapse in={open}>
+          <Alert
+            severity="success"
+            action={
+              <IconButton
+                aria-label="close"
+                color="inherit"
+                size="small"
+                onClick={() => {
+                  setOpen(false);
+                }}
               >
-                {isLoading ? "Пожалуйста, подождите" : "Отправить"}
-              </Button>
-            </Box>
-            <Box>
-              <Button variant="text" onClick={() => router.back()}>
-                Отменить
-              </Button>
-            </Box>
-          </Stack>
+                <CloseIcon fontSize="inherit" />
+              </IconButton>
+            }
+            sx={{ mb: 1, mt: 1 }}
+          >
+            На указанную электронную почту была отправлена ссылка для сброса
+            пароля
+          </Alert>
+        </Collapse>
+      )}
+      <Box
+        component="form"
+        onSubmit={handlePasswordReset}
+        noValidate
+        sx={{ mt: 1, width: "100%" }}
+      >
+        <TextField
+          margin="normal"
+          required
+          fullWidth
+          id="email"
+          label="email"
+          name="email"
+          type={"text"}
+          autoComplete="email"
+          autoFocus
+          value={email.value}
+          error={email.error}
+          onChange={email.handleChange}
+          helperText={email.helperText}
+        />
+
+        {error && "status" in error && error?.status === 400 && (
+          <Alert severity="error">
+            Не было найдено учетной записи, связанной с указанным адресом
+            электронной почты. Попробуйте использовать другой адрес электронной
+            почты.
+          </Alert>
+        )}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            mt: 1,
+            mb: 1,
+          }}
+        >
+          <Button fullWidth type="submit" variant="contained">
+            {isLoading ? "Пожалуйста, подождите" : "Отправить"}
+          </Button>
+          <Button fullWidth variant="text" onClick={() => router.back()}>
+            Отменить
+          </Button>
         </Box>
       </Box>
-    </Container>
+    </>
   );
 }

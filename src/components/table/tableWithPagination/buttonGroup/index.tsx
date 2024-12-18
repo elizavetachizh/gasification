@@ -4,11 +4,11 @@ import ButtonGroup from "@mui/material/ButtonGroup";
 import { Grid } from "@mui/material";
 
 interface SplitButtonProps {
-  onAgreeAction: (
+  onAgreeAction?: (
     selected: number[],
     setSelected: React.Dispatch<React.SetStateAction<number[]>>,
   ) => Promise<void>;
-  onRejectAction: (
+  onRejectAction?: (
     selected: number[],
     setSelected: React.Dispatch<React.SetStateAction<number[]>>,
   ) => Promise<void>;
@@ -32,10 +32,22 @@ export default function SplitButton({
       }}
     >
       <ButtonGroup variant="text" aria-label="Basic button group">
-        <Button variant="contained" color="success" onClick={() => onAgreeAction(selected, setSelected)}>
+        <Button
+          variant="contained"
+          color="success"
+          onClick={() =>
+            onAgreeAction ? onAgreeAction(selected, setSelected) : undefined
+          }
+        >
           Принять
         </Button>
-        <Button variant="text" color="error" onClick={() => onRejectAction(selected, setSelected)}>
+        <Button
+          variant="text"
+          color="error"
+          onClick={() =>
+            onRejectAction ? onRejectAction(selected, setSelected) : undefined
+          }
+        >
           Отклонить
         </Button>
       </ButtonGroup>
