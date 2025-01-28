@@ -10,9 +10,10 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { useGetConstructionObjectsQuery } from "@/src/lib/features/constructionObjects/constructionObjectsApi";
+import { ConstructionObjectState } from "@/src/app/profile/page";
 interface ConstructionObjectSelectProps {
   value: number | null;
-  onChange: (value: number | null) => void;
+  onChange: (newObject: ConstructionObjectState) => void;
 }
 const ConstructionObjectSelect: React.FC<ConstructionObjectSelectProps> = ({
   value,
@@ -21,7 +22,12 @@ const ConstructionObjectSelect: React.FC<ConstructionObjectSelectProps> = ({
   const { data, isLoading, isError, error } = useGetConstructionObjectsQuery();
   const handleChange = (event: SelectChangeEvent<number>) => {
     const selectedValue = event.target.value as number;
-    onChange(selectedValue); // Если пустое значение, то передаём `null`
+    const selectedElement = data?.find((el) => el.id === selectedValue);
+    onChange({
+      construction_object: selectedValue,
+      address: selectedElement?.address,
+      work_packages: selectedElement?.work_packages,
+    });
   };
   if (isLoading) return <CircularProgress />;
   if (isError)
@@ -32,7 +38,7 @@ const ConstructionObjectSelect: React.FC<ConstructionObjectSelectProps> = ({
           "Не удалось загрузить объекты"}
       </p>
     );
-
+  console.log(data);
   return (
     <FormControl>
       <FormLabel>Выберите объект</FormLabel>
@@ -40,6 +46,7 @@ const ConstructionObjectSelect: React.FC<ConstructionObjectSelectProps> = ({
         size="small"
         id="construction-object-select"
         value={value || ""}
+        error={!value}
         onChange={handleChange}
         displayEmpty
         label={"Код объекта"}

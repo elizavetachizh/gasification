@@ -12,7 +12,7 @@ interface TabsInterface {
   acceptedText?: string;
 }
 
-export default function xTabsComponent({
+export default function TabsComponent({
   status,
   setStatus,
   length,

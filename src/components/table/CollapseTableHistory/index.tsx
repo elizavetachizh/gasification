@@ -16,14 +16,14 @@ import { StatusConversion } from "@/src/utils/StatusConversion";
 
 interface CollapseTableHistoryInterface {
   statusHistory: StatusHistoryItem[] | undefined;
-  open: boolean;
+  open: number | null;
 }
 export default function CollapseTableHistory({
   statusHistory,
   open,
 }: CollapseTableHistoryInterface) {
   return (
-    <Collapse in={open} timeout="auto" unmountOnExit>
+    <Collapse in={!!open} timeout="auto" unmountOnExit>
       <Box sx={{ margin: 1 }}>
         <Typography variant="h6" gutterBottom component="div">
           История
@@ -31,8 +31,8 @@ export default function CollapseTableHistory({
         <Table size="small" aria-label="purchases">
           <TableHead>
             <TableRow>
-              <TableCell>Дата</TableCell>
-              <TableCell>Статус</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Дата</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Статус</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

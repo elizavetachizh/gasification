@@ -13,13 +13,18 @@ import { useHandleSelected } from "@/src/hooks/useHandleSelected";
 import TableWithPagination from "../tableWithPagination";
 
 export default function TableProfile() {
+  const [page, setPage] = useState(1);
+  const [page_size, setPageSize] = useState(5);
   const [status, setStatus] = useState("created");
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
   const {
-    data: orders = [],
+    data: orders,
     isLoading,
     isFetching,
-  } = useGetOrdersQuery(status, { skip: !accessToken });
+  } = useGetOrdersQuery(
+    { status: status, page, page_size },
+    { skip: !accessToken },
+  );
   const [deleteOrder] = useCanceledOrderMutation();
   const [agreeOrder] = useAgreedOrderMutation();
   const [rejectOrder] = useRejectedOrderMutation();
@@ -45,7 +50,8 @@ export default function TableProfile() {
   };
   return (
     <TableWithPagination
-      orders={orders}
+      orders={orders?.result}
+      count={orders?.count}
       isLoading={isLoading}
       isFetching={isFetching}
       selected={selected}
@@ -56,6 +62,10 @@ export default function TableProfile() {
       handleAgreeSelectedAction={handleAgreeSelected}
       handleDeleteSelectedAction={handleDeleteSelected}
       handleRejectSelectedAction={handleRejectSelected}
+      setPage={setPage}
+      page={page}
+      setPageSize={setPageSize}
+      page_size={page_size}
     />
   );
 }

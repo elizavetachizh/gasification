@@ -6,7 +6,6 @@ import {
   Collapse,
   IconButton,
   TextField,
-  Typography,
 } from "@mui/material";
 import React, { useState } from "react";
 import { usePasswordResetMutation } from "@/src/lib/features/accounts/accountsApi";
@@ -35,10 +34,6 @@ export default function PasswordResetPage() {
   const [open, setOpen] = useState(true);
   return (
     <>
-      <Typography component="h1" variant="h5">
-        Восстановление пароля
-      </Typography>
-
       {isSuccess && (
         <Collapse in={open}>
           <Alert
@@ -100,7 +95,12 @@ export default function PasswordResetPage() {
             mb: 1,
           }}
         >
-          <Button fullWidth type="submit" variant="contained">
+          <Button
+            fullWidth
+            type="submit"
+            variant="contained"
+            disabled={isLoading || !email.value}
+          >
             {isLoading ? "Пожалуйста, подождите" : "Отправить"}
           </Button>
           <Button fullWidth variant="text" onClick={() => router.back()}>

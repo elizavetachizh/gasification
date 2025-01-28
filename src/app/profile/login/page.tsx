@@ -58,7 +58,11 @@ export default function LoginPage() {
       <Typography component="h1" variant="h5">
         Авторизация
       </Typography>
+
       <Box component="form" onSubmit={handleLogin} noValidate sx={{ mt: 1 }}>
+        {error && "status" in error && error.status === 401 && (
+            <Alert severity="error">Неверный логин либо пароль</Alert>
+        )}
         <TextField
           margin="normal"
           required
@@ -74,11 +78,10 @@ export default function LoginPage() {
         />
 
         <FormControl variant="outlined" fullWidth>
-          <InputLabel htmlFor="outlined-adornment-password">
-            Password
+          <InputLabel required htmlFor="outlined-adornment-password">
+            Пароль
           </InputLabel>
           <OutlinedInput
-            required
             fullWidth
             name="password"
             id="outlined-adornment-password"
@@ -90,7 +93,7 @@ export default function LoginPage() {
               <InputAdornment position="end">
                 <IconButton
                   aria-label={
-                    showPassword ? "hide the password" : "display the password"
+                    showPassword ? "Скрыть пароль" : "Показать пароль"
                   }
                   onClick={handleClickShowPassword}
                   onMouseDown={handleMouseDownPassword}
@@ -113,9 +116,6 @@ export default function LoginPage() {
         >
           {isLoading ? "Пожалуйста, подождите" : "Войти"}
         </Button>
-        {error && "status" in error && error.status === 401 && (
-          <Alert severity="error">Неверный логин либо пароль</Alert>
-        )}
         <Box sx={{ textAlign: "center" }}>
           <Button
             variant="text"

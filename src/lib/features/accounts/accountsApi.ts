@@ -32,7 +32,39 @@ export const accountsApi = createApi({
       }),
       invalidatesTags: ["Accounts"],
     }),
+
+    passwordResetValidateToken: builder.mutation({
+      query: (token) => ({
+        url: "/accounts/password_reset/validate_token/",
+        method: "POST",
+        body: {token},
+      }),
+      invalidatesTags: ["Accounts"],
+    }),
+
+    passwordResetConfirm: builder.mutation({
+      query: ({ token, password }) => ({
+        url: "/accounts/password_reset/confirm/",
+        method: "POST",
+        body: { token, password },
+      }),
+      invalidatesTags: ["Accounts"],
+    }),
+    signUpConfirm: builder.mutation({
+      query: ({ token, password }) => ({
+        url: "/accounts/sign-up/confirm/",
+        method: "POST",
+        body: { token, password },
+      }),
+      invalidatesTags: ["Accounts"],
+    }),
   }),
 });
 
-export const { useGetUserQuery, usePasswordResetMutation } = accountsApi;
+export const {
+  useGetUserQuery,
+  usePasswordResetMutation,
+  usePasswordResetValidateTokenMutation,
+  usePasswordResetConfirmMutation,
+    useSignUpConfirmMutation
+} = accountsApi;

@@ -6,9 +6,13 @@ export interface ExceptionDateInterface {
   order_count_per_day: number | null;
 }
 
-export interface ConfigStatsInterface {
+export interface ConfigStatsDetailsInterface {
   date: string | null;
   order_count: number;
+}
+
+export interface ConfigStatsInterface {
+  result: Array<ConfigStatsDetailsInterface>;
 }
 
 export interface ConfigSetupInterface {
@@ -20,15 +24,16 @@ export interface ConfigSetupInterface {
 
 export interface OrdersAvailableInterface {
   status: boolean;
+  available_dates: string[];
 }
 
 export const exceptionDateApi = createApi({
   reducerPath: "exceptionDateApi",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["ExceptionDate"],
+  tagTypes: ["ExceptionDate", "OrdersAvailable"],
   endpoints: (builder) => ({
     getConfigStats: builder.query<
-      ConfigStatsInterface[],
+      ConfigStatsInterface,
       { start_date: string | null; end_date: string | null }
     >({
       query: ({ start_date, end_date }) => ({
@@ -36,7 +41,7 @@ export const exceptionDateApi = createApi({
       }),
       providesTags: ["ExceptionDate"],
     }),
-    getConfigSetup: builder.query<ConfigSetupInterface[], void>({
+    getConfigSetup: builder.query<ConfigSetupInterface, void>({
       query: () => ({
         url: "/orders/config/setup",
       }),
@@ -46,7 +51,7 @@ export const exceptionDateApi = createApi({
       query: () => ({
         url: "/orders/available/",
       }),
-      providesTags: ["ExceptionDate"],
+      providesTags: ["OrdersAvailable"],
     }),
     putConfigSetup: builder.mutation<
       ConfigSetupInterface,

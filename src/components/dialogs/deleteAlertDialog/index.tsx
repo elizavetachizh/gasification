@@ -8,10 +8,12 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 interface DeleteAlertDialogInterface {
   handleDelete: () => void;
+  dataTypeToDelete: string;
 }
 
 export default function AlertDialog({
   handleDelete,
+  dataTypeToDelete = "request",
 }: DeleteAlertDialogInterface) {
   const [open, setOpen] = React.useState(false);
 
@@ -25,7 +27,13 @@ export default function AlertDialog({
 
   return (
     <React.Fragment>
-      <Tooltip title="Отменить заявку">
+      <Tooltip
+        title={
+          dataTypeToDelete === "request"
+            ? "Отменить заявку"
+            : "Удалить пользователя"
+        }
+      >
         <IconButton>
           <DeleteIcon onClick={handleClickOpen} />
         </IconButton>
@@ -37,7 +45,9 @@ export default function AlertDialog({
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          {"Подтвердить удаление записи?"}
+          {dataTypeToDelete === "request"
+            ? "Подтвердить удаление записи?"
+            : "Подтвердить удаление пользователя?"}
         </DialogTitle>
         <DialogActions>
           <Button onClick={handleClose}>Отменить</Button>

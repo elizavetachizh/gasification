@@ -9,29 +9,54 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useState } from "react";
+import { useOnConfirmedOrderMutation } from "@/src/lib/features/orders/ordersApi";
+import { SuccessAlertComponent } from "@/src/components/alert/success";
+import ErrorAlertComponent from "@/src/components/alert/error";
 
 interface FormDialogInterface {
-  date?: null | string;
+  date: null | string;
   setDateAction?: (value: string) => void;
   handleConfirmSelectedAction?: () => void;
+  selected: number[];
+  setSelectedAction: React.Dispatch<React.SetStateAction<number[]>>;
 }
 
 export default function FormDialog({
-  handleConfirmSelectedAction,
   date,
   setDateAction,
+  selected,
+  setSelectedAction,
 }: FormDialogInterface) {
+  const [confirmOrder, { isLoading, isSuccess, error }] =
+    useOnConfirmedOrderMutation();
   const [isDialog, setIsDialog] = useState(false);
   const handleClickOpen = () => {
     setIsDialog(true);
   };
-
   const handleClose = () => {
     setIsDialog(false);
   };
 
+  const handleConfirmSelected = async () => {
+    try {
+      await Promise.all(
+        selected.map((id) => confirmOrder({ id, on_date: date }).unwrap()),
+      );
+      setSelectedAction([]);
+    } catch (err) {
+      console.error("Ошибка при удалении заявок:", err);
+    }
+  };
+  console.log(isLoading);
   return (
     <React.Fragment>
+      {isSuccess && (
+        <SuccessAlertComponent
+          message={"Запрос на перенос заявки успешно отправлен!"}
+        />
+      )}
+      {error && <ErrorAlertComponent message={`Ошибка!`} />}
+
       <Button onClick={handleClickOpen}>Предложить перенос</Button>
       {isDialog && (
         <Dialog
@@ -41,9 +66,7 @@ export default function FormDialog({
             component: "form",
             onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
               event.preventDefault();
-              if (handleConfirmSelectedAction) {
-                handleConfirmSelectedAction();
-              }
+              handleConfirmSelected();
               handleClose();
             },
           }}
@@ -51,7 +74,7 @@ export default function FormDialog({
           <DialogTitle>Модальное окно выбора даты</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Выберете необходимую дату переноса заявки
+              Выберите необходимую дату для переноса заявки
             </DialogContentText>
             <TextField
               autoFocus
@@ -62,6 +85,9 @@ export default function FormDialog({
               type="date"
               fullWidth
               variant="standard"
+              inputProps={{
+                min: new Date().toISOString().split("T")[0], // Устанавливаем минимальное значение
+              }}
               value={date}
               onChange={(event) =>
                 setDateAction ? setDateAction(event.target.value) : undefined
@@ -70,8 +96,8 @@ export default function FormDialog({
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>Отменить</Button>
-            <Button disabled={!date} type="submit">
-              Подтвердить
+            <Button disabled={!date || isLoading} type="submit">
+              {isLoading ? "Пожалуйста, подождите" : "Подтвердить"}
             </Button>
           </DialogActions>
         </Dialog>

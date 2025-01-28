@@ -14,7 +14,7 @@ export const useFormField = ({
   errorMessage = "Invalid input",
 }: UseFormFieldProps) => {
   const [value, setValue] = useState(initialValue);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState(true);
   const [helperText, setHelperText] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

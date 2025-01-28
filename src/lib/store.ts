@@ -6,12 +6,13 @@ import { accountsTokenApi } from "@/src/lib/features/accounts/accountsTokenApi";
 import { constructionObjectsApi } from "@/src/lib/features/constructionObjects/constructionObjectsApi";
 import { accountsApi } from "@/src/lib/features/accounts/accountsApi";
 import { orderTypesApi } from "@/src/lib/features/orders/orderTypesApi";
+import { exceptionDateApi } from "@/src/lib/features/config/exceptionDateApi";
+import { clientsApi } from "@/src/lib/features/accounts/accountsClientsApi";
+import { counterpartiesApi } from "@/src/lib/features/counterparties/CounterpartiesAPI";
 
 //reducers
 import { authReducer } from "@/src/lib/slices/authSlice";
 import { accountReducer } from "@/src/lib/slices/accountSlice";
-import { exceptionDateApi } from "@/src/lib/features/config/exceptionDateApi";
-import { clientsApi } from "@/src/lib/features/accounts/accountsClientsApi";
 
 export const makeStore = () => {
   return configureStore({
@@ -25,6 +26,7 @@ export const makeStore = () => {
       [orderTypesApi.reducerPath]: orderTypesApi.reducer,
       [exceptionDateApi.reducerPath]: exceptionDateApi.reducer,
       [clientsApi.reducerPath]: clientsApi.reducer,
+      [counterpartiesApi.reducerPath]: counterpartiesApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat([
@@ -35,6 +37,7 @@ export const makeStore = () => {
         orderTypesApi.middleware,
         exceptionDateApi.middleware,
         clientsApi.middleware,
+        counterpartiesApi.middleware,
       ]),
   });
 };

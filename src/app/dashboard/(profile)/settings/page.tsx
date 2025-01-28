@@ -20,7 +20,7 @@ import {
   Typography,
 } from "@mui/material";
 import {
-  ConfigStatsInterface,
+  ConfigStatsDetailsInterface,
   useCreateExceptionDateMutation,
   useGetConfigStatsQuery,
 } from "@/src/lib/features/config/exceptionDateApi";
@@ -32,7 +32,7 @@ type DayData = Record<string, number>;
 export default function SettingPage() {
   const [createExceptionDate] = useCreateExceptionDateMutation();
   const [selectedDate, setSelectedDate] = useState<string>("");
-  const [dayValues, setDayValues] = useState<DayData>({});
+  const [dayValues, setDayValues] = useState<DayData | undefined>({});
   const [inputValue, setInputValue] = useState<number>(0);
   const [monthBoundaries, setMonthBoundaries] = useState<{
     startOfMonth: string;
@@ -55,7 +55,7 @@ export default function SettingPage() {
     if (!isLoading) {
       // Преобразуем массив в объект
       const values = configStatsInfo?.result?.reduce(
-        (acc: DayData, { date, order_count }: ConfigStatsInterface) => {
+        (acc: DayData, { date, order_count }: ConfigStatsDetailsInterface) => {
           const formattedDate = dayjs(date).format("YYYY-MM-DD"); // Преобразуем дату в формат YYYY-MM-DD
           acc[formattedDate] = order_count;
           return acc;
@@ -72,7 +72,8 @@ export default function SettingPage() {
     const { day, outsideCurrentMonth, ...other } = props;
     // Проверяем, является ли day экземпляром Dayjs
     const dateKey = day.format("YYYY-MM-DD");
-    const dayValue = dayValues[dateKey] || "";
+
+    const dayValue = dayValues[dateKey] || undefined;
 
     return (
       <Badge
@@ -112,7 +113,9 @@ export default function SettingPage() {
     if (date) {
       const dateKey = date.format("YYYY-MM-DD");
       setSelectedDate(dateKey);
-      setInputValue(dayValues[dateKey] || 0);
+      if (dayValues) {
+        setInputValue(dayValues[dateKey] || 0);
+      }
     }
   };
 
@@ -132,7 +135,7 @@ export default function SettingPage() {
   return (
     <Paper sx={{ width: "70%", mb: 1, mt: 1, p: 2 }}>
       <Typography variant="subtitle2">
-        Дополнительные настройки лимита на конкретную дату
+        Дополнительные настройки лимитов на конкретную дату
       </Typography>
       <Box
         display="flex"

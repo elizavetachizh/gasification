@@ -77,6 +77,7 @@ const AppBarComponent: React.FC<IAppBar> = ({ open, setOpen }) => {
 
   const handleLogout = () => {
     // Сбрасываем состояние
+    console.log("ffff");
     dispatch(resetState());
     localStorage.removeItem("refreshToken");
     // Очищаем кэш запросов API
@@ -118,6 +119,31 @@ const AppBarComponent: React.FC<IAppBar> = ({ open, setOpen }) => {
           open={Boolean(anchorEl)}
           onClose={handleClose}
         >
+          <MenuItem>
+            <Typography sx={{ textAlign: "center" }}>
+              Подразделение: СЗ
+            </Typography>
+          </MenuItem>
+          <MenuItem>
+            <Typography sx={{ textAlign: "center" }}>
+              Табельный номер: 10858
+            </Typography>
+          </MenuItem>
+          <MenuItem>
+            <Typography sx={{ textAlign: "center" }}>
+              Email: johndoe@example.com
+            </Typography>
+          </MenuItem>
+          <MenuItem>
+            <Typography sx={{ textAlign: "center" }}>
+              Контактный телефон: +375444640092
+            </Typography>
+          </MenuItem>
+          <MenuItem>
+            <Typography sx={{ textAlign: "center" }}>
+              ФИО: Иванов Иван Иванович
+            </Typography>
+          </MenuItem>
           <MenuItem onClick={handleLogout}>Выйти</MenuItem>
         </Menu>
         <Typography variant="h6" noWrap>

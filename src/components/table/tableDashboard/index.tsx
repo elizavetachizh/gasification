@@ -3,20 +3,26 @@ import React, { useState } from "react";
 import {
   useAcceptedOrderMutation,
   useGetOrdersQuery,
-  useOnConfirmedOrderMutation,
 } from "@/src/lib/features/orders/ordersApi";
 import { useHandleSelected } from "@/src/hooks/useHandleSelected";
 import TableWithPagination from "../tableWithPagination";
+import { useSelector } from "react-redux";
+import { RootState } from "@/src/lib/store";
 
 export default function TableDashboard() {
   const [status, setStatus] = useState("created");
+  const [page, setPage] = useState(1);
+  const [page_size, setPageSize] = useState(10);
+  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
   const {
-    data: orders = [],
+    data: orders,
     isLoading,
     isFetching,
-  } = useGetOrdersQuery(status);
+  } = useGetOrdersQuery(
+    { status: status, page, page_size },
+    { skip: !accessToken },
+  );
   const [acceptOrder] = useAcceptedOrderMutation();
-  const [confirmOrder] = useOnConfirmedOrderMutation();
   const [date, setDate] = useState("");
   const [selected, setSelected] = useState<number[]>([]);
 
@@ -25,21 +31,11 @@ export default function TableDashboard() {
     "Выбранные заявки приняты",
   );
 
-  const handleConfirmSelected = async () => {
-    try {
-      await Promise.all(
-        selected.map((id) => confirmOrder({ id, on_date: date }).unwrap()),
-      );
-      setSelected([]);
-    } catch (err) {
-      console.error("Ошибка при удалении заявок:", err);
-    }
-  };
-
   return (
     <TableWithPagination
       typeTable={"dashboard"}
-      orders={orders}
+      orders={orders?.result}
+      count={orders?.count}
       isLoading={isLoading}
       isFetching={isFetching}
       selected={selected}
@@ -47,9 +43,12 @@ export default function TableDashboard() {
       status={status}
       setStatus={setStatus}
       handleAcceptSelectedAction={handleAcceptSelected}
-      handleConfirmSelectedAction={handleConfirmSelected}
       date={date}
       setDateAction={setDate}
+      setPage={setPage}
+      page={page}
+      setPageSize={setPageSize}
+      page_size={page_size}
     />
   );
 }

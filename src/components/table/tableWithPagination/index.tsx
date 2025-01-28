@@ -26,10 +26,12 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import CollapseTableHistory from "@/src/components/table/CollapseTableHistory";
 import ToolbarComponent from "@/src/components/toolbar";
+import TablePaginationComponent from "@/src/components/table/tableWithPagination/pagination";
 
 interface TableWithPaginationInterface {
   typeTable?: string;
-  orders: OrderOriginal[];
+  orders?: OrderOriginal[];
+  count?: number;
   isLoading: boolean;
   isFetching: boolean;
   selected: number[];
@@ -53,14 +55,18 @@ interface TableWithPaginationInterface {
     selected: number[],
     setSelected: React.Dispatch<React.SetStateAction<number[]>>,
   ) => Promise<void>;
-  handleConfirmSelectedAction?: () => void;
-  date?: string;
+  date: string | null;
   setDateAction?: React.Dispatch<React.SetStateAction<string>>;
+  setPage: (page: number) => void;
+  page: number;
+  setPageSize: (pageSize: number) => void;
+  page_size: number;
 }
 
 export default function TableWithPagination({
   typeTable = "profile",
-  orders,
+  orders = [],
+  count = 0,
   isLoading,
   isFetching,
   selected,
@@ -72,11 +78,14 @@ export default function TableWithPagination({
   handleAgreeSelectedAction,
   handleRejectSelectedAction,
   handleAcceptSelectedAction,
-  handleConfirmSelectedAction,
   date,
   setDateAction,
+  setPage,
+  page,
+  setPageSize,
+  page_size,
 }: TableWithPaginationInterface) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<null | number>(null);
   const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked && orders) {
       setSelected(orders.map((order) => order.id));
@@ -103,7 +112,7 @@ export default function TableWithPagination({
           <TabsComponent
             status={status}
             setStatus={setStatus}
-            length={orders?.length}
+            length={count || 0}
             onConfirmText={onConfirmText}
           />
           {isFetching ? (
@@ -118,6 +127,7 @@ export default function TableWithPagination({
                         length={selected.length}
                         content={
                           <AlertDialog
+                            dataTypeToDelete={"request"}
                             handleDelete={() =>
                               handleDeleteSelectedAction
                                 ? handleDeleteSelectedAction(
@@ -155,11 +165,8 @@ export default function TableWithPagination({
                         <FormDialog
                           date={date}
                           setDateAction={setDateAction}
-                          handleConfirmSelectedAction={
-                            handleConfirmSelectedAction
-                              ? handleConfirmSelectedAction
-                              : undefined
-                          }
+                          selected={selected}
+                          setSelectedAction={setSelected}
                         />
                       </Grid>
                     ))}
@@ -173,7 +180,7 @@ export default function TableWithPagination({
                   )}
                 </React.Fragment>
               )}
-              <TableContainer component={Paper} sx={{ maxHeight: 440 }}>
+              <TableContainer component={Paper} sx={{ maxHeight: 550 }}>
                 <Table stickyHeader>
                   <TableHead>
                     <TableRow>
@@ -195,29 +202,52 @@ export default function TableWithPagination({
                         </TableCell>
                       )}
                       {typeTable === "dashboard" && status === "accepted" && (
-                        <TableCell></TableCell>
+                        <TableCell />
                       )}
-                      <TableCell>№</TableCell>
-                      <TableCell>Дата подачи</TableCell>
-                      <TableCell>Дата вызова представителя</TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>№</TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>
+                        Дата подачи
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>
+                        ФИО заявителя
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>
+                        Контактный телефон
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>
+                        Вид производимых работ
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>
+                        Код объекта
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>
+                        Комплекс работ
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>
+                        Адрес объекта
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>
+                        Дата вызова представителя
+                      </TableCell>
                       {status === "accepted" && (
-                        <TableCell>Соглавсованная дата</TableCell>
+                        <TableCell sx={{ fontWeight: "bold" }}>
+                          Соглавсованная дата
+                        </TableCell>
                       )}
                       {status === "on_confirm" && (
-                        <TableCell>
+                        <TableCell sx={{ fontWeight: "bold" }}>
                           {typeTable === "profile"
                             ? "Предлагаемая дата вызова"
                             : "Предложенная дата переноса"}
                         </TableCell>
                       )}
-                      <TableCell>ФИО заявителя</TableCell>
-                      <TableCell>Код объекта</TableCell>
-                      <TableCell>Вид производимых работ</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {orders?.map((order, index) => {
                       const labelId = `enhanced-table-checkbox-${index}`;
+                      const numberRow =
+                        page > 1 ? (page - 1) * page_size + 1 : 1;
                       return (
                         <React.Fragment key={order.id}>
                           <TableRow
@@ -231,7 +261,6 @@ export default function TableWithPagination({
                                 status === "created")) && (
                               <TableCell padding="checkbox">
                                 <Checkbox
-                                  color="primary"
                                   checked={selected.includes(order.id)}
                                   onChange={() => handleSelectOne(order.id)}
                                   inputProps={{
@@ -246,9 +275,9 @@ export default function TableWithPagination({
                                   <IconButton
                                     aria-label="expand row"
                                     size="small"
-                                    onClick={() => setOpen(!open)}
+                                    onClick={() => setOpen(order.id)}
                                   >
-                                    {open ? (
+                                    {open === order.id ? (
                                       <KeyboardArrowUpIcon />
                                     ) : (
                                       <KeyboardArrowDownIcon />
@@ -256,9 +285,27 @@ export default function TableWithPagination({
                                   </IconButton>
                                 </TableCell>
                               )}
-                            <TableCell>{index + 1}</TableCell>
+                            <TableCell>{index + numberRow}</TableCell>
                             <TableCell>
                               {DateConversion(order.created_at)}
+                            </TableCell>
+                            <TableCell>{order.applicant}</TableCell>
+                            <TableCell>{order.applicant}</TableCell>
+                            <TableCell>
+                              {order.order_type?.order_type}
+                            </TableCell>
+                            <TableCell>
+                              {order.construction_object?.code}
+                            </TableCell>
+                            <TableCell>
+                              {order.construction_object?.work_packages.map(
+                                (workPackage, index) => (
+                                  <p key={index}>{workPackage}</p>
+                                ),
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {order.construction_object?.address}
                             </TableCell>
                             <TableCell>
                               {DateConversion(order.selected_date)}
@@ -276,31 +323,36 @@ export default function TableWithPagination({
                                   "Нет данных"}
                               </TableCell>
                             )}
-                            <TableCell>{order.applicant}</TableCell>
-                            <TableCell>
-                              {order.construction_object?.code}
-                            </TableCell>
-                            <TableCell>
-                              {order.order_type?.order_type}
-                            </TableCell>
                           </TableRow>
-                          <TableRow>
-                            <TableCell
-                              style={{ paddingBottom: 0, paddingTop: 0 }}
-                              colSpan={8}
-                            >
-                              <CollapseTableHistory
-                                statusHistory={order.status_history}
-                                open={open}
-                              />
-                            </TableCell>
-                          </TableRow>
+                          {typeTable === "dashboard" &&
+                            status === "accepted" && (
+                              <TableRow>
+                                <TableCell
+                                  style={{ paddingBottom: 0, paddingTop: 0 }}
+                                  colSpan={8}
+                                >
+                                  {open === order.id && (
+                                    <CollapseTableHistory
+                                      statusHistory={order.status_history}
+                                      open={open}
+                                    />
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            )}
                         </React.Fragment>
                       );
                     })}
                   </TableBody>
                 </Table>
               </TableContainer>
+              <TablePaginationComponent
+                count={count}
+                page_size={page_size}
+                page={page}
+                setPage={setPage}
+                setPageSize={setPageSize}
+              />
             </>
           )}
         </>

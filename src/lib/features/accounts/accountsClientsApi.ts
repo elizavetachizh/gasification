@@ -6,10 +6,15 @@ export interface Client {
   password: string;
   counterparty: number;
   id: 2;
-  is_active: true;
+  is_active: boolean;
+  is_approved: boolean | undefined;
   last_login: null;
   login: string;
   name: string;
+}
+
+export interface ClientsInterface {
+  result: Array<Client>;
 }
 
 export interface UpdateClient {
@@ -31,7 +36,7 @@ export const clientsApi = createApi({
   tagTypes: ["Clients"],
 
   endpoints: (builder) => ({
-    getClients: builder.query<Client[], void>({
+    getClients: builder.query<ClientsInterface | undefined, void>({
       query: () => ({
         url: "/accounts/clients",
       }),
@@ -42,6 +47,13 @@ export const clientsApi = createApi({
         url: `/accounts/clients/${id}/`,
       }),
       providesTags: ["Clients"],
+    }),
+    resendEmailClient: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `/accounts/clients/${id}/resend-signup-email/`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Clients"],
     }),
     createClient: builder.mutation<ClientCreate, Partial<ClientCreate>>({
       query: (newClient) => ({
@@ -61,7 +73,7 @@ export const clientsApi = createApi({
     }),
     deleteClient: builder.mutation<void, number>({
       query: (id) => ({
-        url: `/accounts/clients${id}/`,
+        url: `/accounts/clients/${id}/`,
         method: "DELETE",
       }),
       invalidatesTags: ["Clients"],
@@ -73,6 +85,7 @@ export const {
   useGetClientsQuery,
   useGetClientQuery,
   usePutClientMutation,
+  useResendEmailClientMutation,
   useDeleteClientMutation,
   useCreateClientMutation,
 } = clientsApi;

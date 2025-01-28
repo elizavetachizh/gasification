@@ -9,33 +9,50 @@ import {
   CardActions,
   TextField,
   Button,
-  Alert,
-  Collapse,
-  IconButton,
   Box,
+  CircularProgress,
+  FormControlLabel,
+  Checkbox,
+  Typography,
 } from "@mui/material";
 import { useFormField } from "@/src/hooks/useFormField";
 import { useCreateOrderMutation } from "@/src/lib/features/orders/ordersApi";
 import ConstructionObjectSelect from "@/src/components/select/selectConstructionObjects";
 import { useState } from "react";
-import CloseIcon from "@mui/icons-material/Close";
 import OrderTypeSelect from "@/src/components/select/selectOrderType";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import dayjs, { Dayjs } from "dayjs";
+import { Dayjs } from "dayjs";
 import "dayjs/locale/ru";
 import AppBarProfile from "@/src/components/appBarProfile";
 import { useGetOrdersAvailableQuery } from "@/src/lib/features/config/exceptionDateApi";
 import TableProfile from "@/src/components/table/tableProfile";
+import { useGetUserQuery } from "@/src/lib/features/accounts/accountsApi";
+import { useAppSelector } from "@/src/lib/hooks";
+import { SuccessAlertComponent } from "@/src/components/alert/success";
+import ErrorAlertComponent from "@/src/components/alert/error";
+
+export interface ConstructionObjectState {
+  construction_object: number | null;
+  address: string;
+  work_packages: number[];
+}
 
 function ProfilePage() {
-  const [createOrder, { isSuccess, error, isLoading }] =
+  const { accessToken } = useAppSelector((state) => state.auth);
+  const { data: ordersAvailable, isLoading } = useGetOrdersAvailableQuery();
+  const [createOrder, { isSuccess, error, isLoading: isLoadingCreateOrder }] =
     useCreateOrderMutation();
-  const { data: ordersAvailable } = useGetOrdersAvailableQuery();
-  const [open, setOpen] = useState(true);
-  const [constructionObject, setConstructionObject] = useState<number | null>(
-    null,
-  );
+  const { data: userData } = useGetUserQuery(undefined, {
+    skip: !accessToken,
+  });
+
+  const [constructionObject, setConstructionObject] =
+    useState<ConstructionObjectState>({
+      construction_object: null,
+      address: "",
+      work_packages: [],
+    });
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
   const [orderType, setOrderType] = useState<number | null>(null);
   // Настройка кастомного хука для каждого поля
@@ -53,184 +70,216 @@ function ProfilePage() {
     await createOrder({
       applicant: nameField.value,
       selected_date: selectedDate?.format("YYYY-MM-DD"),
-      construction_object: constructionObject,
+      construction_object: constructionObject.construction_object,
       order_type: orderType,
     }).unwrap(); // unwrap для обработки ошибок
     nameField.reset();
     phoneField.reset();
-    setConstructionObject(null);
+    setConstructionObject({
+      construction_object: null,
+      address: "",
+      work_packages: [],
+    });
     setOrderType(null);
     setSelectedDate(null);
   };
-
   // Функция для блокировки выходных (суббота - 6, воскресенье - 0)
-  const disableWeekends = (date: Dayjs | null) => {
-    const day = date?.day(); // day() возвращает номер дня недели (0 = воскресенье, 6 = суббота)
-    return day === 0 || day === 6;
+  const isDateAvailable = (date: Dayjs | null) => {
+    if (!date) return false;
+    return ordersAvailable?.available_dates.includes(date.format("YYYY-MM-DD"));
   };
 
-  // Минимальная и максимальная даты
-  const minDate = dayjs().add(3, "day"); // Текущая дата + 3 дня
-  const maxDate = dayjs().add(7, "day"); // Текущая дата + 7 дней
-  console.log(selectedDate);
   return (
     <Box>
       <AppBarProfile />
       <Container maxWidth="lg" component="main">
-        <Card
-          variant="outlined"
-          sx={{
-            marginTop: 8,
-            maxHeight: "max-content",
-            maxWidth: "100%",
-            mx: "auto",
-            // to make the demo resizable
-            overflow: "auto",
-            resize: "horizontal",
-          }}
-        >
-          {isSuccess && (
-            <Collapse in={open}>
-              <Alert
-                severity="success"
-                action={
-                  <IconButton
-                    aria-label="close"
-                    color="inherit"
-                    size="small"
-                    onClick={() => {
-                      setOpen(false);
-                    }}
-                  >
-                    <CloseIcon fontSize="inherit" />
-                  </IconButton>
-                }
-                sx={{ mb: 2 }}
-              >
-                Заявка успешно создана!
-              </Alert>
-            </Collapse>
-          )}
-          {error && "status" in error && (
-            <Alert severity="error">
-              Ошибка при создании заявки: {error.status}
-            </Alert>
-          )}
-          <CardContent
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "repeat(2, minmax(80px, 1fr))",
-              gap: 1.5,
-            }}
-          >
-            {ordersAvailable?.status === true ? (
-              <React.Fragment>
-                <FormControl>
-                  <FormLabel>ФИО заявителя</FormLabel>
-                  <TextField
-                    size="small"
-                    type={"text"}
-                    placeholder="Иванов Иван Иванович"
-                    value={nameField.value}
-                    onChange={nameField.handleChange}
-                    error={nameField.error}
-                    helperText={nameField.helperText}
-                  />
-                </FormControl>
-                <FormControl>
-                  <FormLabel>Контактный мобильный телефон</FormLabel>
-                  <TextField
-                    size="small"
-                    type={"text"}
-                    placeholder="375444640092"
-                    value={phoneField.value}
-                    onChange={phoneField.handleChange}
-                    error={phoneField.error}
-                    required={true}
-                    helperText={phoneField.helperText}
-                  />
-                </FormControl>
-                <OrderTypeSelect value={orderType} onChange={setOrderType} />
-                <ConstructionObjectSelect
-                  value={constructionObject}
-                  onChange={setConstructionObject}
-                />
-                <FormControl sx={{ gridColumn: "1/-1" }}>
-                  <FormLabel>Комплекс работ</FormLabel>
-                  <TextField
-                    size="small"
-                    type={"text"}
-                    placeholder="Комплекс работ"
-                  />
-                </FormControl>
-                <FormControl>
-                  <FormLabel>Дата</FormLabel>
-                  <LocalizationProvider
-                    dateAdapter={AdapterDayjs}
-                    adapterLocale="ru"
-                  >
-                    <DatePicker
-                      value={selectedDate}
-                      onChange={(newValue) => setSelectedDate(newValue)}
-                      shouldDisableDate={disableWeekends}
-                      minDate={minDate}
-                      maxDate={maxDate}
-                      slots={{
-                        textField: TextField, // Используем TextField для кастомизации
-                      }}
-                      slotProps={{
-                        textField: {
-                          inputProps: { readOnly: true, required: true }, // Блокировка ручного ввода
-                          size: "small",
-                        },
-                      }}
-                    />
-                  </LocalizationProvider>
-                </FormControl>
-                <FormControl>
-                  <FormLabel>Адрес объекта</FormLabel>
-                  <TextField
-                    size="small"
-                    type={"text"}
-                    placeholder="Адрес объекта"
-                  />
-                </FormControl>
-                <CardActions sx={{ gridColumn: "1/-1" }}>
-                  <Button
-                    disabled={
-                      isLoading ||
-                      nameField.error ||
-                      phoneField.error ||
-                      !(orderType && constructionObject && selectedDate)
-                    }
-                    onClick={handleSubmit}
-                    variant="contained"
-                  >
-                    {isLoading ? "Пожалуйста, подождите" : "Оставить заявку"}
-                  </Button>
-                </CardActions>
-              </React.Fragment>
-            ) : (
-              <p>Время подачи заявок с 8:00 до 12:00</p>
-            )}
-          </CardContent>
-        </Card>
+        {userData?.counterparty ? (
+          <React.Fragment>
+            <Card
+              variant="outlined"
+              sx={{
+                marginTop: 8,
+                maxHeight: "max-content",
+                maxWidth: "100%",
+                mx: "auto",
+                // to make the demo resizable
+                overflow: "auto",
+                resize: "horizontal",
+              }}
+            >
+              {isSuccess && (
+                <SuccessAlertComponent message={"Заявка успешно создана!"} />
+              )}
 
-        <Card
-          variant="outlined"
-          sx={{
-            marginTop: 8,
-            marginBottom: 4,
-            maxHeight: "max-content",
-            maxWidth: "100%",
-            mx: "auto",
-            // to make the demo resizable
-            overflow: "auto",
-            resize: "horizontal",
-          }}
-        >
-          <TableProfile />
-        </Card>
+              {error && (
+                <ErrorAlertComponent
+                  message={` Ошибка при создании заявки: ${error?.data?.selected_date?.toString()}`}
+                />
+              )}
+
+              <CardContent
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, minmax(80px, 1fr))",
+                  gap: 1.5,
+                }}
+              >
+                {isLoading ? (
+                  <CircularProgress size="3rem" />
+                ) : ordersAvailable?.status === true ? (
+                  <React.Fragment>
+                    <FormControl>
+                      <FormLabel>ФИО заявителя</FormLabel>
+                      <TextField
+                        size="small"
+                        type={"text"}
+                        placeholder="Иванов Иван Иванович"
+                        value={nameField.value}
+                        onChange={nameField.handleChange}
+                        error={nameField.error}
+                        helperText={nameField.helperText}
+                      />
+                    </FormControl>
+                    <FormControl>
+                      <FormLabel>Контактный мобильный телефон</FormLabel>
+                      <TextField
+                        size="small"
+                        type={"text"}
+                        placeholder="375444640092"
+                        value={phoneField.value}
+                        onChange={phoneField.handleChange}
+                        error={phoneField.error}
+                        required={true}
+                        helperText={phoneField.helperText}
+                      />
+                    </FormControl>
+                    <OrderTypeSelect
+                      value={orderType}
+                      onChange={setOrderType}
+                    />
+                    <ConstructionObjectSelect
+                      value={constructionObject.construction_object}
+                      onChange={setConstructionObject}
+                    />
+                    <FormControl sx={{ gridColumn: "1/-1" }}>
+                      <FormLabel>Комплекс работ</FormLabel>
+                      {constructionObject.work_packages?.length ? (
+                        <TextField
+                          size="small"
+                          margin="dense"
+                          disabled={true}
+                          value={constructionObject.work_packages.map(
+                            (workPackage) => `${workPackage}`,
+                          )}
+                          type={"text"}
+                          placeholder="Комплекс работ"
+                        />
+                      ) : (
+                        <TextField
+                          size="small"
+                          disabled={true}
+                          type={"text"}
+                          placeholder="Данные по коду объекта"
+                        />
+                      )}
+                    </FormControl>
+                    <FormControl>
+                      <FormLabel>Дата</FormLabel>
+                      <LocalizationProvider
+                        dateAdapter={AdapterDayjs}
+                        adapterLocale="ru"
+                      >
+                        <DatePicker
+                          value={selectedDate}
+                          onChange={(newValue) => setSelectedDate(newValue)}
+                          shouldDisableDate={(date) => !isDateAvailable(date)}
+                          slots={{
+                            textField: TextField, // Используем TextField для кастомизации
+                          }}
+                          slotProps={{
+                            textField: {
+                              inputProps: { readOnly: true, required: true }, // Блокировка ручного ввода
+                              size: "small",
+                              error: !selectedDate,
+                            },
+                          }}
+                        />
+                      </LocalizationProvider>
+                    </FormControl>
+                    <FormControl>
+                      <FormLabel>Адрес объекта</FormLabel>
+                      <TextField
+                        size="small"
+                        type={"text"}
+                        value={constructionObject.address}
+                        disabled={true}
+                        placeholder="Данные по коду объекта"
+                      />
+                    </FormControl>
+                    <FormControl>
+                      <FormControlLabel
+                        control={<Checkbox />}
+                        label={'Объект УП "МИНГАЗ"'}
+                      />
+                    </FormControl>
+                    <CardActions sx={{ gridColumn: "1/-1" }}>
+                      <Button
+                        disabled={
+                          isLoadingCreateOrder ||
+                          nameField.error ||
+                          phoneField.error ||
+                          !(orderType && constructionObject && selectedDate)
+                        }
+                        onClick={handleSubmit}
+                        variant="contained"
+                      >
+                        {isLoadingCreateOrder
+                          ? "Пожалуйста, подождите"
+                          : "Оставить заявку"}
+                      </Button>
+                    </CardActions>
+                  </React.Fragment>
+                ) : (
+                  <p>Время подачи заявок с 8:00 до 12:00</p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card
+              variant="outlined"
+              sx={{
+                marginTop: 8,
+                marginBottom: 4,
+                maxHeight: "max-content",
+                maxWidth: "100%",
+                mx: "auto",
+                // to make the demo resizable
+                overflow: "auto",
+                resize: "horizontal",
+              }}
+            >
+              <TableProfile />
+            </Card>
+          </React.Fragment>
+        ) : userData?.is_active === false ? (
+          <Typography
+            sx={{ marginTop: "30px" }}
+            variant="h4"
+            gutterBottom
+            align={"center"}
+          >
+            Ваша учетная запись заблокирована. Обратитесь к администратору.
+          </Typography>
+        ) : (
+          <Typography
+            sx={{ marginTop: "30px" }}
+            variant="h4"
+            gutterBottom
+            align={"center"}
+          >
+            Недостаточно прав доступа. Обратитесь к администратору.
+          </Typography>
+        )}
       </Container>
     </Box>
   );

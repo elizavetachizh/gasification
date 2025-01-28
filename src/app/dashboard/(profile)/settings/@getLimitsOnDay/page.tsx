@@ -1,11 +1,13 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
   CircularProgress,
   FormControl,
+  Paper,
   TextField,
+  Typography,
 } from "@mui/material";
 import {
   useGetConfigSetupQuery,
@@ -15,19 +17,11 @@ import {
 export default function GetLimitsOnDayPage() {
   const { data: configSetupInfo, isLoading } = useGetConfigSetupQuery();
   const [putConfigSetup] = usePutConfigSetupMutation();
-  const [fridayLimit, setFridayLimit] = useState<number | null>(
-    configSetupInfo?.[0]?.order_count_friday ?? 0,
-  );
-  const [dayLimit, setDayLimit] = useState<number | null>(
-    configSetupInfo?.[0]?.order_count_per_day ?? 0,
-  );
-  const [timeStart, setTimeStart] = useState<string>(
-    configSetupInfo?.[0]?.time_start ?? "",
-  );
-  const [timeEnd, setTimeEnd] = useState<string>(
-    configSetupInfo?.[0]?.time_end ?? "",
-  );
-  console.log(configSetupInfo);
+  const [fridayLimit, setFridayLimit] = useState<number | null | undefined>(0);
+  const [dayLimit, setDayLimit] = useState<number | null | undefined>(0);
+  const [timeStart, setTimeStart] = useState<string | undefined>("");
+  const [timeEnd, setTimeEnd] = useState<string | undefined>("");
+
   const handlePutConfigSetup = async (
     fridayLimit: number | null,
     dayLimit: number | null,
@@ -40,12 +34,20 @@ export default function GetLimitsOnDayPage() {
     });
   };
 
+  useEffect(() => {
+    setFridayLimit(configSetupInfo?.order_count_friday);
+    setDayLimit(configSetupInfo?.order_count_per_day);
+    setTimeStart(configSetupInfo?.time_start);
+    setTimeEnd(configSetupInfo?.time_end);
+  }, [configSetupInfo]);
+
   if (isLoading) {
     return <CircularProgress />;
   }
 
   return (
-    <>
+    <Paper sx={{ width: "60%", mb: 1, mt: 1, p: 2 }}>
+      <Typography variant="subtitle2">Общие настройки лимитов</Typography>
       <Box
         component="form"
         sx={{ "& .MuiTextField-root": { m: 1, width: "25ch" } }}
@@ -114,6 +116,6 @@ export default function GetLimitsOnDayPage() {
       >
         Сохранить
       </Button>
-    </>
+    </Paper>
   );
 }

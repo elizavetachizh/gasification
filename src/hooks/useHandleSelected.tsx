@@ -1,3 +1,5 @@
+import { SuccessAlertComponent } from "@/src/components/alert/success";
+
 type ApiFunction = (id: number) => Promise<any>;
 
 export const useHandleSelected = (
@@ -11,7 +13,8 @@ export const useHandleSelected = (
     try {
       await Promise.all(selected.map((id) => apiFunction(id)));
       setSelected([]); // Очищаем выбранные заявки
-      alert(successMessage);
+      // alert(successMessage);
+      return <SuccessAlertComponent message={successMessage} />;
     } catch (err) {
       console.error(`Ошибка при выполнении операции: ${err}`);
     }

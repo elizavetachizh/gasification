@@ -21,8 +21,8 @@ const WithAuthDashboard: React.FC<WithAuthProps> = ({ children }) => {
 
   useEffect(() => {
     if (refreshToken) {
-      dispatch(setTypeStaff(userData));
       router.replace("/dashboard");
+      dispatch(setTypeStaff(userData));
     } else {
       router.replace("/dashboard/login");
     }
@@ -35,12 +35,15 @@ const WithAuthDashboard: React.FC<WithAuthProps> = ({ children }) => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          height: "100vh",
-          width: "100vw",
-          backgroundColor: "background.default", // Для соответствия теме
+          width: "100vw", // Ширина всей страницы
+          height: "100vh", // Высота всей страницы
+          position: "fixed", // Фиксация контейнера
+          top: 0,
+          left: 0,
+          backgroundColor: "rgba(255, 255, 255, 0.8)", // Полупрозрачный фон (опционально)
         }}
       >
-        <CircularProgress size="3rem" />
+        <CircularProgress size="4rem" />
       </Box>
     );
   }

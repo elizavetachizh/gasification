@@ -39,6 +39,7 @@ const OrderTypeSelect: React.FC<OrderTypeSelectProps> = ({
     <FormControl>
       <FormLabel>Выберите вид работ</FormLabel>
       <Select
+        error={!value}
         size="small"
         id="construction-object-select"
         value={value || ""}

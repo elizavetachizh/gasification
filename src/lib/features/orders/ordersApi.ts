@@ -20,20 +20,36 @@ export interface OrderOriginal
   id: number;
   created_at: string;
   on_date?: string;
-  construction_object?: { code: string }; // Переопределяем тип
+  construction_object?: {
+    code: string;
+    address: string;
+    work_packages: number[];
+  }; // Переопределяем тип
   order_type?: { order_type: string }; // Переопределяем тип
   status_history?: StatusHistoryItem[]; // Добавляем новое свойство
+}
+
+export interface OrdersInterface {
+  result: Array<OrderOriginal> | never[];
+  count?: number;
 }
 
 export const ordersApi = createApi({
   reducerPath: "ordersApi",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Orders"],
+  tagTypes: ["Orders", "OrdersAvailable"],
   endpoints: (builder) => ({
-    getOrders: builder.query<OrderOriginal[], string | undefined>({
-      query: (status) => ({
+    getOrders: builder.query<
+      OrdersInterface | undefined,
+      { status?: string; page?: number; page_size?: number }
+    >({
+      query: (params) => ({
         url: "/orders",
-        params: { status }, // Параметр status передается напрямую
+        params: {
+          status: params.status,
+          page: params.page,
+          page_size: params.page_size,
+        }, // Параметр status передается напрямую
       }),
       providesTags: ["Orders"],
     }),
@@ -43,7 +59,7 @@ export const ordersApi = createApi({
         method: "POST",
         body: newOrder,
       }),
-      invalidatesTags: ["Orders"],
+      invalidatesTags: ["Orders", "OrdersAvailable"],
     }),
     //подтверждение заявки СЗ
     acceptedOrder: builder.mutation<void, number>({
@@ -69,7 +85,7 @@ export const ordersApi = createApi({
       query: ({ id, on_date }) => ({
         url: `/orders/${id}/on_confirm/`,
         method: "POST",
-        body: { on_date: on_date },
+        body: { on_date },
       }),
       invalidatesTags: ["Orders"],
     }),

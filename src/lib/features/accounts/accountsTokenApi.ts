@@ -2,8 +2,6 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { backend } from "@/src/const/backend";
 import { setAccessToken } from "@/src/lib/slices/authSlice";
 
-
-
 export interface AuthResponse {
   access: string;
   refresh: string;
