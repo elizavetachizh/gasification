@@ -25,12 +25,15 @@ import {
   useGetConfigStatsQuery,
 } from "@/src/lib/features/config/exceptionDateApi";
 import "dayjs/locale/ru";
+import { SuccessAlertComponent } from "@/src/components/alert/success";
+import { ErrorAlertComponent } from "@/src/components/alert/error";
 
 const initialValue = dayjs(new Date());
 type DayData = Record<string, number>;
 
 export default function SettingPage() {
-  const [createExceptionDate] = useCreateExceptionDateMutation();
+  const [createExceptionDate, { isSuccess, error }] =
+    useCreateExceptionDateMutation();
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [dayValues, setDayValues] = useState<DayData | undefined>({});
   const [inputValue, setInputValue] = useState<number>(0);
@@ -133,62 +136,78 @@ export default function SettingPage() {
   };
 
   return (
-    <Paper sx={{ width: "70%", mb: 1, mt: 1, p: 2 }}>
-      <Typography variant="subtitle2">
-        Дополнительные настройки лимитов на конкретную дату
-      </Typography>
-      <Box
-        display="flex"
-        gap={2}
-        component="form"
-        sx={{ "& .MuiTextField-root": { m: 1, width: "25ch" } }}
-        // noValidate
-        // autoComplete="on"
-      >
-        <Box>
-          <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ru">
-            <DateCalendar
-              sx={{ width: "400px", margin: "0 auto" }}
-              value={selectedDate ? dayjs(selectedDate) : null}
-              onChange={handleDaySelect}
-              onMonthChange={handleMonthChange} // Добавлен обработчик изменения месяца
-              defaultValue={initialValue}
-              renderLoading={() => <DayCalendarSkeleton />}
-              slots={{
-                day: renderDay,
-              }}
-            />
-          </LocalizationProvider>
-        </Box>
+    <React.Fragment>
+      {isSuccess && (
+        <SuccessAlertComponent
+          message={"Данные успешно сохранены."}
+          isInitialOpen={isSuccess}
+        />
+      )}
+      {error && (
+        <ErrorAlertComponent
+          message={"Что-то пошло не так, попробуйте еще раз..."}
+          isInitialOpen={!!error}
+        />
+      )}
+      <Paper sx={{ width: "70%", mb: 1, mt: 1, p: 2 }}>
+        <Typography variant="subtitle2">
+          Дополнительные настройки лимитов на конкретную дату
+        </Typography>
         <Box
-          display={"flex"}
-          sx={{
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "flex-start",
-          }}
+          display="flex"
+          gap={2}
+          component="form"
+          sx={{ "& .MuiTextField-root": { m: 1, width: "25ch" } }}
+          // noValidate
+          // autoComplete="on"
         >
-          <FormControl>
-            <FormLabel> Введите лимит для выбранного дня:</FormLabel>
-            <TextField
-              size="small"
-              label="Лимит"
-              type="number"
-              value={inputValue}
-              onChange={handleInputChange}
-              disabled={!selectedDate}
-              fullWidth
-            />
-          </FormControl>
-          <Button
-            variant="contained"
-            size="small"
-            onClick={() => handleCreateExceptionDate(selectedDate, inputValue)}
+          <Box>
+            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ru">
+              <DateCalendar
+                sx={{ width: "400px", margin: "0 auto" }}
+                value={selectedDate ? dayjs(selectedDate) : null}
+                onChange={handleDaySelect}
+                onMonthChange={handleMonthChange} // Добавлен обработчик изменения месяца
+                defaultValue={initialValue}
+                renderLoading={() => <DayCalendarSkeleton />}
+                slots={{
+                  day: renderDay,
+                }}
+              />
+            </LocalizationProvider>
+          </Box>
+          <Box
+            display={"flex"}
+            sx={{
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "flex-start",
+            }}
           >
-            Сохранить
-          </Button>
+            <FormControl>
+              <FormLabel> Введите лимит для выбранного дня:</FormLabel>
+              <TextField
+                size="small"
+                label="Лимит"
+                type="number"
+                value={inputValue}
+                onChange={handleInputChange}
+                disabled={!selectedDate}
+                fullWidth
+              />
+            </FormControl>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={() =>
+                handleCreateExceptionDate(selectedDate, inputValue)
+              }
+            >
+              Сохранить
+            </Button>
+          </Box>
         </Box>
-      </Box>
-    </Paper>
+      </Paper>
+    </React.Fragment>
   );
 }

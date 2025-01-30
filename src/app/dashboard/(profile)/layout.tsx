@@ -20,7 +20,7 @@ export default function ProfileLayout({
           sx={{ flexGrow: 1, bgcolor: "background.default", p: 3 }}
         >
           <Toolbar />
-          {userData?.is_staff === true ? (
+          {userData && userData?.is_staff === true ? (
             children
           ) : (
             <Typography

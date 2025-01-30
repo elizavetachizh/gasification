@@ -6,17 +6,15 @@ import DialogTitle from "@mui/material/DialogTitle";
 
 interface DeleteAlertDialogInterface {
   handleDelete: () => void;
+  setOpen: React.Dispatch<React.SetStateAction<boolean | null | number>>;
+  open: boolean;
 }
 
 export default function BlockUserDialog({
   handleDelete,
+  open,
+  setOpen,
 }: DeleteAlertDialogInterface) {
-  const [open, setOpen] = React.useState(false);
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
   const handleClose = () => {
     setOpen(false);
   };

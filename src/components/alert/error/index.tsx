@@ -2,8 +2,14 @@ import React, { useState } from "react";
 import { Alert, IconButton, Snackbar } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
-export default function ErrorAlertComponent({ message }: { message: string }) {
-  const [open, setOpen] = useState(true);
+export const ErrorAlertComponent = ({
+  message,
+  isInitialOpen,
+}: {
+  message: string;
+  isInitialOpen: boolean;
+}) => {
+  const [open, setOpen] = useState(isInitialOpen);
   return (
     <Snackbar
       open={open}
@@ -33,4 +39,4 @@ export default function ErrorAlertComponent({ message }: { message: string }) {
       </Alert>
     </Snackbar>
   );
-}
+};

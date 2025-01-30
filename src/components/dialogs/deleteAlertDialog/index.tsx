@@ -9,11 +9,13 @@ import DeleteIcon from "@mui/icons-material/Delete";
 interface DeleteAlertDialogInterface {
   handleDelete: () => void;
   dataTypeToDelete: string;
+  isLoadingDelete?: boolean;
 }
 
 export default function AlertDialog({
   handleDelete,
   dataTypeToDelete = "request",
+  isLoadingDelete,
 }: DeleteAlertDialogInterface) {
   const [open, setOpen] = React.useState(false);
 
@@ -24,14 +26,13 @@ export default function AlertDialog({
   const handleClose = () => {
     setOpen(false);
   };
-
   return (
     <React.Fragment>
       <Tooltip
         title={
           dataTypeToDelete === "request"
             ? "Отменить заявку"
-            : "Удалить пользователя"
+            : "Заблокировать пользователя"
         }
       >
         <IconButton>
@@ -47,12 +48,17 @@ export default function AlertDialog({
         <DialogTitle id="alert-dialog-title">
           {dataTypeToDelete === "request"
             ? "Подтвердить удаление записи?"
-            : "Подтвердить удаление пользователя?"}
+            : "Подтвердить блокировку пользователя?"}
         </DialogTitle>
         <DialogActions>
           <Button onClick={handleClose}>Отменить</Button>
-          <Button color="error" onClick={handleDelete} autoFocus>
-            Удалить
+          <Button
+            color="error"
+            disabled={isLoadingDelete}
+            onClick={handleDelete}
+            autoFocus
+          >
+            {dataTypeToDelete === "request" ? "Удалить" : "Заблокировать"}
           </Button>
         </DialogActions>
       </Dialog>

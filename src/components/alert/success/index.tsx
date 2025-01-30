@@ -3,8 +3,14 @@ import { Alert, IconButton, Snackbar } from "@mui/material";
 import React, { useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 
-export const SuccessAlertComponent = ({ message }: { message: string }) => {
-  const [open, setOpen] = useState(false);
+export const SuccessAlertComponent = ({
+  message,
+  isInitialOpen,
+}: {
+  message: string;
+  isInitialOpen: boolean;
+}) => {
+  const [open, setOpen] = useState(isInitialOpen);
   return (
     <Snackbar
       open={open}

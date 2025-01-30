@@ -23,11 +23,12 @@ export default function ThemeModeContextProvider({
     palette: {
       mode,
     },
-    // typography: {
-    //   body1: {
-    //     color: mode === "dark" ? "#fff" : "#000",
-    //   },
-    // },
+
+    typography: {
+      h4: {
+        color: mode === "dark" ? "#fff" : "#000",
+      },
+    },
   });
 
   return (

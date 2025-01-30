@@ -3,7 +3,6 @@ import {
   Box,
   Checkbox,
   CircularProgress,
-  Grid,
   IconButton,
   Paper,
   Table,
@@ -13,6 +12,7 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import React, { useState } from "react";
 import { OrderOriginal } from "@/src/lib/features/orders/ordersApi";
 import SplitButton from "@/src/components/table/tableWithPagination/buttonGroup";
@@ -55,7 +55,7 @@ interface TableWithPaginationInterface {
     selected: number[],
     setSelected: React.Dispatch<React.SetStateAction<number[]>>,
   ) => Promise<void>;
-  date: string | null;
+  date?: string | null;
   setDateAction?: React.Dispatch<React.SetStateAction<string>>;
   setPage: (page: number) => void;
   page: number;
@@ -269,22 +269,21 @@ export default function TableWithPagination({
                                 />
                               </TableCell>
                             )}
-                            {typeTable === "dashboard" &&
-                              status === "accepted" && (
-                                <TableCell>
-                                  <IconButton
-                                    aria-label="expand row"
-                                    size="small"
-                                    onClick={() => setOpen(order.id)}
-                                  >
-                                    {open === order.id ? (
-                                      <KeyboardArrowUpIcon />
-                                    ) : (
-                                      <KeyboardArrowDownIcon />
-                                    )}
-                                  </IconButton>
-                                </TableCell>
-                              )}
+                            {status === "accepted" && (
+                              <TableCell>
+                                <IconButton
+                                  aria-label="expand row"
+                                  size="small"
+                                  onClick={() => setOpen(order.id)}
+                                >
+                                  {open === order.id ? (
+                                    <KeyboardArrowUpIcon />
+                                  ) : (
+                                    <KeyboardArrowDownIcon />
+                                  )}
+                                </IconButton>
+                              </TableCell>
+                            )}
                             <TableCell>{index + numberRow}</TableCell>
                             <TableCell>
                               {DateConversion(order.created_at)}
@@ -324,22 +323,21 @@ export default function TableWithPagination({
                               </TableCell>
                             )}
                           </TableRow>
-                          {typeTable === "dashboard" &&
-                            status === "accepted" && (
-                              <TableRow>
-                                <TableCell
-                                  style={{ paddingBottom: 0, paddingTop: 0 }}
-                                  colSpan={8}
-                                >
-                                  {open === order.id && (
-                                    <CollapseTableHistory
-                                      statusHistory={order.status_history}
-                                      open={open}
-                                    />
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            )}
+                          {status === "accepted" && (
+                            <TableRow>
+                              <TableCell
+                                style={{ paddingBottom: 0, paddingTop: 0 }}
+                                colSpan={8}
+                              >
+                                {open === order.id && (
+                                  <CollapseTableHistory
+                                    statusHistory={order.status_history}
+                                    open={open}
+                                  />
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          )}
                         </React.Fragment>
                       );
                     })}

@@ -8,6 +8,8 @@ import { useHandleSelected } from "@/src/hooks/useHandleSelected";
 import TableWithPagination from "../tableWithPagination";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/lib/store";
+import { SuccessAlertComponent } from "@/src/components/alert/success";
+import { ErrorAlertComponent } from "@/src/components/alert/error";
 
 export default function TableDashboard() {
   const [status, setStatus] = useState("created");
@@ -22,33 +24,44 @@ export default function TableDashboard() {
     { status: status, page, page_size },
     { skip: !accessToken },
   );
-  const [acceptOrder] = useAcceptedOrderMutation();
+  const [acceptOrder, { isSuccess, error }] = useAcceptedOrderMutation();
   const [date, setDate] = useState("");
   const [selected, setSelected] = useState<number[]>([]);
 
-  const { handleAction: handleAcceptSelected } = useHandleSelected(
-    acceptOrder,
-    "Выбранные заявки приняты",
-  );
+  const { handleAction: handleAcceptSelected } = useHandleSelected(acceptOrder);
 
   return (
-    <TableWithPagination
-      typeTable={"dashboard"}
-      orders={orders?.result}
-      count={orders?.count}
-      isLoading={isLoading}
-      isFetching={isFetching}
-      selected={selected}
-      setSelected={setSelected}
-      status={status}
-      setStatus={setStatus}
-      handleAcceptSelectedAction={handleAcceptSelected}
-      date={date}
-      setDateAction={setDate}
-      setPage={setPage}
-      page={page}
-      setPageSize={setPageSize}
-      page_size={page_size}
-    />
+    <>
+      {isSuccess && (
+        <SuccessAlertComponent
+          isInitialOpen={isSuccess}
+          message={"Выбранные заявки приняты!"}
+        />
+      )}
+      {error && (
+        <ErrorAlertComponent
+          isInitialOpen={!!error}
+          message={"Что-то пошло не так, попробуйте еще раз..."}
+        />
+      )}
+      <TableWithPagination
+        typeTable={"dashboard"}
+        orders={orders?.result}
+        count={orders?.count}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        selected={selected}
+        setSelected={setSelected}
+        status={status}
+        setStatus={setStatus}
+        handleAcceptSelectedAction={handleAcceptSelected}
+        date={date}
+        setDateAction={setDate}
+        setPage={setPage}
+        page={page}
+        setPageSize={setPageSize}
+        page_size={page_size}
+      />
+    </>
   );
 }

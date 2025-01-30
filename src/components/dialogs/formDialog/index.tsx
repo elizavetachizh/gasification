@@ -11,12 +11,11 @@ import DialogTitle from "@mui/material/DialogTitle";
 import { useState } from "react";
 import { useOnConfirmedOrderMutation } from "@/src/lib/features/orders/ordersApi";
 import { SuccessAlertComponent } from "@/src/components/alert/success";
-import ErrorAlertComponent from "@/src/components/alert/error";
+import { ErrorAlertComponent } from "@/src/components/alert/error";
 
 interface FormDialogInterface {
   date: null | string;
   setDateAction?: (value: string) => void;
-  handleConfirmSelectedAction?: () => void;
   selected: number[];
   setSelectedAction: React.Dispatch<React.SetStateAction<number[]>>;
 }
@@ -47,30 +46,26 @@ export default function FormDialog({
       console.error("Ошибка при удалении заявок:", err);
     }
   };
-  console.log(isLoading);
+
+  if (error)
+    return (
+      <ErrorAlertComponent
+        isInitialOpen={!!error}
+        message={`Ошибка при создании пользователя`}
+      />
+    );
+
   return (
     <React.Fragment>
       {isSuccess && (
         <SuccessAlertComponent
-          message={"Запрос на перенос заявки успешно отправлен!"}
+          isInitialOpen={isSuccess}
+          message={`Пользователю был отправлен запрос на перенос заявки на ${date} `}
         />
       )}
-      {error && <ErrorAlertComponent message={`Ошибка!`} />}
-
       <Button onClick={handleClickOpen}>Предложить перенос</Button>
       {isDialog && (
-        <Dialog
-          open={isDialog}
-          onClose={handleClose}
-          PaperProps={{
-            component: "form",
-            onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
-              event.preventDefault();
-              handleConfirmSelected();
-              handleClose();
-            },
-          }}
-        >
+        <Dialog open={isDialog} onClose={handleClose}>
           <DialogTitle>Модальное окно выбора даты</DialogTitle>
           <DialogContent>
             <DialogContentText>
@@ -85,8 +80,10 @@ export default function FormDialog({
               type="date"
               fullWidth
               variant="standard"
-              inputProps={{
-                min: new Date().toISOString().split("T")[0], // Устанавливаем минимальное значение
+              slotProps={{
+                htmlInput: {
+                  min: new Date().toISOString().split("T")[0], // Устанавливаем минимальное значение
+                },
               }}
               value={date}
               onChange={(event) =>
@@ -96,7 +93,11 @@ export default function FormDialog({
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>Отменить</Button>
-            <Button disabled={!date || isLoading} type="submit">
+            <Button
+              disabled={!date || isLoading}
+              type="submit"
+              onClick={() => handleConfirmSelected()}
+            >
               {isLoading ? "Пожалуйста, подождите" : "Подтвердить"}
             </Button>
           </DialogActions>

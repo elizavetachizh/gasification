@@ -77,7 +77,6 @@ const AppBarComponent: React.FC<IAppBar> = ({ open, setOpen }) => {
 
   const handleLogout = () => {
     // Сбрасываем состояние
-    console.log("ffff");
     dispatch(resetState());
     localStorage.removeItem("refreshToken");
     // Очищаем кэш запросов API

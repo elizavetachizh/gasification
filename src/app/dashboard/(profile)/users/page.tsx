@@ -5,7 +5,6 @@ import {
   useResendEmailClientMutation,
 } from "@/src/lib/features/accounts/accountsClientsApi";
 import {
-  Alert,
   Box,
   Checkbox,
   Chip,
@@ -33,26 +32,23 @@ import MenuItem from "@mui/material/MenuItem";
 import BlockUserDialog from "@/src/components/dialogs/blockUserDialog";
 import ResendUserEmailDialog from "@/src/components/dialogs/resendUserEmailDialog";
 import { SuccessAlertComponent } from "@/src/components/alert/success";
-import ErrorAlertComponent from "@/src/components/alert/error";
+import { ErrorAlertComponent } from "@/src/components/alert/error";
 
 export default function UsersPage() {
-  const [openAlert, setOpenAlert] = useState(false);
   const [openMenu, setOpenMenu] = useState<null | HTMLElement>(null);
-  const [openBlockUserDialog, setOpenBlockUserDialog] = useState<null | number>(
-    null,
-  );
+  const [openBlockUserDialog, setOpenBlockUserDialog] = useState<
+    null | number | boolean
+  >(null);
   const [openResendEmailClientDialog, setOpenResendEmailClientDialog] =
     useState<null | number>(null);
   const { data: clients, isLoading } = useGetClientsQuery();
-  const [deleteClient, { isLoading: isLoadingDelete, isSuccess }] =
-    useDeleteClientMutation();
+  const [
+    deleteClient,
+    { isLoading: isLoadingDelete, isSuccess, error: errorDelete },
+  ] = useDeleteClientMutation();
   const [
     resendEmailClient,
-    {
-      error: errorResendEmailClient,
-      isLoading: isLoadingResendEmailClient,
-      isSuccess: isSuccessResendEmailClient,
-    },
+    { error: errorResendEmailClient, isSuccess: isSuccessResendEmailClient },
   ] = useResendEmailClientMutation();
   const [selected, setSelected] = useState<number[]>([]);
 
@@ -74,41 +70,49 @@ export default function UsersPage() {
     setOpen(false);
   };
 
-  const { handleAction: handleDeleteSelected } = useHandleSelected(
-    deleteClient,
-    "Выбранные пользователи успешно удалены",
-  );
-  console.log(isLoadingDelete);
+  const { handleAction: handleDeleteSelected } =
+    useHandleSelected(deleteClient);
+
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setOpenMenu(event.currentTarget);
   };
   const handleOpenBlockUserDialog = (id: number) => {
-    console.log(id);
     setOpenBlockUserDialog(id);
   };
 
   const handleResendEmailClient = async (id: number) => {
-    console.log(id);
     await resendEmailClient(id).unwrap();
     setOpenResendEmailClientDialog(null);
   };
 
-  if (isSuccessResendEmailClient) {
-    return (
-      <SuccessAlertComponent
-        message={
-          "Пользователь успешно создан! Пользователю было выслано письмо с паролем на указанный email."
-        }
-      />
-    );
-  }
-  if (errorResendEmailClient) {
-    return <ErrorAlertComponent message={`Ошибка при создании пользователя`} />;
-  }
-  console.log(isSuccessResendEmailClient);
   return (
     <>
-
+      {isSuccessResendEmailClient && (
+        <SuccessAlertComponent
+          message={
+            "Пользователю было выслано повторное письмо с паролем на указанный email."
+          }
+          isInitialOpen={isSuccessResendEmailClient}
+        />
+      )}
+      {isSuccess && (
+        <SuccessAlertComponent
+          message={"Пользователь успешно был заблокирован."}
+          isInitialOpen={isSuccess}
+        />
+      )}
+      {errorResendEmailClient && (
+        <ErrorAlertComponent
+          message={`Ошибка при создании пользователя`}
+          isInitialOpen={!!errorResendEmailClient}
+        />
+      )}
+      {errorDelete && (
+        <ErrorAlertComponent
+          message={`Ошибка при удалении пользователя`}
+          isInitialOpen={!!errorDelete}
+        />
+      )}
       <Typography variant="h4" gutterBottom>
         Список пользователей
       </Typography>
@@ -124,21 +128,13 @@ export default function UsersPage() {
               !!selected.length ? (
                 <React.Fragment>
                   <AlertDialog
+                    isLoadingDelete={isLoadingDelete}
                     dataTypeToDelete={"users"}
                     handleDelete={async () => {
                       await handleDeleteSelected(selected, setSelected);
-                      setOpenAlert(true);
                     }}
                   />
                 </React.Fragment>
-              ) : openAlert ? (
-                <Alert severity="warning" onClose={() => setOpenAlert(false)}>
-                  {isLoadingDelete
-                    ? "Пожалуйста, подождите"
-                    : isSuccess
-                      ? "Пользователь был удален."
-                      : "Произошла ошибка."}
-                </Alert>
               ) : (
                 <Tooltip title="Добавить нового пользователя">
                   <IconButton onClick={handleClickOpen}>
@@ -239,7 +235,13 @@ export default function UsersPage() {
       )}
       {open && <FormCreateUserDialog handleClose={handleClose} open={open} />}
       {openBlockUserDialog && (
-        <BlockUserDialog handleDelete={() => console.log("block")} />
+        <BlockUserDialog
+          open={!!openBlockUserDialog}
+          setOpen={setOpenBlockUserDialog}
+          handleDelete={async () => {
+            await handleDeleteSelected(selected, setSelected);
+          }}
+        />
       )}
       {openResendEmailClientDialog && (
         <ResendUserEmailDialog

@@ -30,7 +30,7 @@ import TableProfile from "@/src/components/table/tableProfile";
 import { useGetUserQuery } from "@/src/lib/features/accounts/accountsApi";
 import { useAppSelector } from "@/src/lib/hooks";
 import { SuccessAlertComponent } from "@/src/components/alert/success";
-import ErrorAlertComponent from "@/src/components/alert/error";
+import { ErrorAlertComponent } from "@/src/components/alert/error";
 
 export interface ConstructionObjectState {
   construction_object: number | null;
@@ -95,6 +95,19 @@ function ProfilePage() {
       <Container maxWidth="lg" component="main">
         {userData?.counterparty ? (
           <React.Fragment>
+            {isSuccess && (
+              <SuccessAlertComponent
+                isInitialOpen={isSuccess}
+                message={"Заявка успешно создана!"}
+              />
+            )}
+
+            {error && (
+              <ErrorAlertComponent
+                isInitialOpen={!!error}
+                message={` Ошибка при создании заявки: ${error?.data?.selected_date?.toString()}`}
+              />
+            )}
             <Card
               variant="outlined"
               sx={{
@@ -107,16 +120,6 @@ function ProfilePage() {
                 resize: "horizontal",
               }}
             >
-              {isSuccess && (
-                <SuccessAlertComponent message={"Заявка успешно создана!"} />
-              )}
-
-              {error && (
-                <ErrorAlertComponent
-                  message={` Ошибка при создании заявки: ${error?.data?.selected_date?.toString()}`}
-                />
-              )}
-
               <CardContent
                 sx={{
                   display: "grid",

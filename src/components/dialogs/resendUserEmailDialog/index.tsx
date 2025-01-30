@@ -26,7 +26,7 @@ export default function ResendUserEmailDialog({
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
     >
-      <DialogTitle id="alert-dialog-title">
+      <DialogTitle align={"center"} id="alert-dialog-title">
         Подтвердить повторную отправку письма для подтверждения регистрации
         пользователя?
       </DialogTitle>

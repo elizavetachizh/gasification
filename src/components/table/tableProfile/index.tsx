@@ -11,6 +11,8 @@ import {
 } from "@/src/lib/features/orders/ordersApi";
 import { useHandleSelected } from "@/src/hooks/useHandleSelected";
 import TableWithPagination from "../tableWithPagination";
+import { SuccessAlertComponent } from "@/src/components/alert/success";
+import { ErrorAlertComponent } from "@/src/components/alert/error";
 
 export default function TableProfile() {
   const [page, setPage] = useState(1);
@@ -25,47 +27,80 @@ export default function TableProfile() {
     { status: status, page, page_size },
     { skip: !accessToken },
   );
-  const [deleteOrder] = useCanceledOrderMutation();
-  const [agreeOrder] = useAgreedOrderMutation();
-  const [rejectOrder] = useRejectedOrderMutation();
+  const [
+    deleteOrder,
+    { isSuccess: isSuccessDelete, isError: isErrorDelete, error: errorDelete },
+  ] = useCanceledOrderMutation();
+  const [
+    agreeOrder,
+    { isSuccess: isSuccessAgree, isError: isErrorAgree, error: errorAgree },
+  ] = useAgreedOrderMutation();
+  const [
+    rejectOrder,
+    { isSuccess: isSuccessReject, isError: isErrorReject, error: errorReject },
+  ] = useRejectedOrderMutation();
   const [selected, setSelected] = useState<number[]>([]);
 
-  const { handleAction: handleDeleteSelected } = useHandleSelected(
-    deleteOrder,
-    "Выбранные заявки удалены",
-  );
-  const { handleAction: handleAgreeSelected } = useHandleSelected(
-    agreeOrder,
-    "Выбранные заявки приняты",
-  );
+  const { handleAction: handleDeleteSelected } = useHandleSelected(deleteOrder);
+  const { handleAction: handleAgreeSelected } = useHandleSelected(agreeOrder);
+  const { handleAction: handleRejectSelected } = useHandleSelected(rejectOrder);
 
-  const handleRejectSelected = async () => {
-    try {
-      await Promise.all(selected.map((id) => rejectOrder(id).unwrap()));
-      setSelected([]);
-      alert("Выбранные заявки приняты");
-    } catch (err) {
-      console.error("Ошибка при удалении заявок:", err);
-    }
-  };
   return (
-    <TableWithPagination
-      orders={orders?.result}
-      count={orders?.count}
-      isLoading={isLoading}
-      isFetching={isFetching}
-      selected={selected}
-      setSelected={setSelected}
-      status={status}
-      setStatus={setStatus}
-      onConfirmText={"Предложен перенос заявок"}
-      handleAgreeSelectedAction={handleAgreeSelected}
-      handleDeleteSelectedAction={handleDeleteSelected}
-      handleRejectSelectedAction={handleRejectSelected}
-      setPage={setPage}
-      page={page}
-      setPageSize={setPageSize}
-      page_size={page_size}
-    />
+    <>
+      {(isSuccessDelete || isSuccessAgree || isSuccessReject) && (
+        <SuccessAlertComponent
+          isInitialOpen={
+            isSuccessDelete
+              ? isSuccessDelete
+              : isSuccessAgree
+                ? isSuccessAgree
+                : isSuccessReject
+                  ? isSuccessReject
+                  : false
+          }
+          message={
+            isSuccessDelete
+              ? "Выбранные заявки удалены!"
+              : isSuccessAgree
+                ? "Выбранные заявки приняты c предложенной датой!"
+                : isSuccessReject
+                  ? "Выбранные заявки приняты с указанной вами датой!"
+                  : ""
+          }
+        />
+      )}
+      {(isErrorDelete || isErrorAgree || isErrorReject) && (
+        <ErrorAlertComponent
+          isInitialOpen={
+            isErrorDelete
+              ? isErrorDelete
+              : isErrorAgree
+                ? isErrorAgree
+                : isErrorReject
+                  ? isErrorReject
+                  : false
+          }
+          message={"Что-то пошло не так, попробуйте еще раз..."}
+        />
+      )}
+      <TableWithPagination
+        orders={orders?.result}
+        count={orders?.count}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        selected={selected}
+        setSelected={setSelected}
+        status={status}
+        setStatus={setStatus}
+        onConfirmText={"Предложен перенос заявок"}
+        handleAgreeSelectedAction={handleAgreeSelected}
+        handleDeleteSelectedAction={handleDeleteSelected}
+        handleRejectSelectedAction={handleRejectSelected}
+        setPage={setPage}
+        page={page}
+        setPageSize={setPageSize}
+        page_size={page_size}
+      />
+    </>
   );
 }
