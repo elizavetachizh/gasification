@@ -7,6 +7,7 @@ export interface Order {
   applicant: string;
   order_type?: number | null;
   status: string;
+  phone_number: string;
 }
 
 export interface StatusHistoryItem {

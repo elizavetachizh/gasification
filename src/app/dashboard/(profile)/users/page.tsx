@@ -17,6 +17,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TextField,
+  Toolbar,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -33,15 +35,18 @@ import BlockUserDialog from "@/src/components/dialogs/blockUserDialog";
 import ResendUserEmailDialog from "@/src/components/dialogs/resendUserEmailDialog";
 import { SuccessAlertComponent } from "@/src/components/alert/success";
 import { ErrorAlertComponent } from "@/src/components/alert/error";
+import TablePaginationComponent from "@/src/components/table/tableWithPagination/pagination";
 
 export default function UsersPage() {
+  const [page, setPage] = useState(1);
+  const [page_size, setPageSize] = useState(5);
   const [openMenu, setOpenMenu] = useState<null | HTMLElement>(null);
   const [openBlockUserDialog, setOpenBlockUserDialog] = useState<
     null | number | boolean
   >(null);
   const [openResendEmailClientDialog, setOpenResendEmailClientDialog] =
     useState<null | number>(null);
-  const { data: clients, isLoading } = useGetClientsQuery();
+  const { data: clients, isLoading } = useGetClientsQuery({ page, page_size });
   const [
     deleteClient,
     { isLoading: isLoadingDelete, isSuccess, error: errorDelete },
@@ -122,31 +127,48 @@ export default function UsersPage() {
         </Box>
       ) : (
         <Paper sx={{ width: "100%", mb: 2 }}>
-          <ToolbarComponent
-            length={selected.length}
-            content={
-              !!selected.length ? (
-                <React.Fragment>
-                  <AlertDialog
-                    isLoadingDelete={isLoadingDelete}
-                    dataTypeToDelete={"users"}
-                    handleDelete={async () => {
-                      await handleDeleteSelected(selected, setSelected);
-                    }}
-                  />
-                </React.Fragment>
-              ) : (
-                <Tooltip title="Добавить нового пользователя">
-                  <IconButton onClick={handleClickOpen}>
-                    <AddIcon />
-                  </IconButton>
-                </Tooltip>
-              )
-            }
-          />
+          {!!selected.length ? (
+            <ToolbarComponent
+              length={selected.length}
+              content={
+                <AlertDialog
+                  isLoadingDelete={isLoadingDelete}
+                  dataTypeToDelete={"users"}
+                  handleDelete={async () => {
+                    await handleDeleteSelected(selected, setSelected);
+                  }}
+                />
+              }
+            />
+          ) : (
+            <Toolbar
+              sx={[
+                {
+                  pl: { sm: 2 },
+                  pr: { xs: 1, sm: 1 },
+                },
+              ]}
+            >
+              <div style={{ flex: "1 1 100%" }}>
+                <TextField
+                  sx={{ minWidth: "250px" }}
+                  id="standard-search"
+                  label="Поиск пользователя по имени"
+                  type="search"
+                  size={"small"}
+                  variant="standard"
+                />
+              </div>
+              <Tooltip title="Добавить нового пользователя">
+                <IconButton onClick={handleClickOpen}>
+                  <AddIcon />
+                </IconButton>
+              </Tooltip>
+            </Toolbar>
+          )}
 
           <TableContainer component={Paper}>
-            <Table stickyHeader>
+            <Table size="small" stickyHeader>
               <TableHead>
                 <TableRow>
                   <TableCell></TableCell>
@@ -160,6 +182,8 @@ export default function UsersPage() {
               <TableBody>
                 {clients?.result?.map((client, index) => {
                   const labelId = `enhanced-table-checkbox-${index}`;
+                  const numberRow =
+                      page > 1 ? (page - 1) * page_size + 1 : 1;
                   return (
                     <TableRow
                       key={client.id}
@@ -178,16 +202,20 @@ export default function UsersPage() {
                         />
                       </TableCell>
 
-                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{index + numberRow}</TableCell>
                       <TableCell>{client.name}</TableCell>
                       <TableCell>{client.email}</TableCell>
                       <TableCell>
                         {client?.is_approved === false ? (
                           <Chip label="Chip Filled" />
                         ) : client.is_active ? (
-                          <Chip label="Активный" color="success" />
+                          <Chip label="Активный" size="small" color="success" />
                         ) : (
-                          <Chip label={"Заблокирован"} color="error" />
+                          <Chip
+                            label={"Заблокирован"}
+                            size="small"
+                            color="error"
+                          />
                         )}
                       </TableCell>
                       <TableCell>
@@ -231,6 +259,13 @@ export default function UsersPage() {
               </TableBody>
             </Table>
           </TableContainer>
+          <TablePaginationComponent
+            count={clients?.count}
+            page_size={page_size}
+            page={page}
+            setPage={setPage}
+            setPageSize={setPageSize}
+          />
         </Paper>
       )}
       {open && <FormCreateUserDialog handleClose={handleClose} open={open} />}

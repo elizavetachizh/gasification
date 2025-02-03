@@ -1,7 +1,7 @@
 import * as React from "react";
 import Button from "@mui/material/Button";
 import ButtonGroup from "@mui/material/ButtonGroup";
-import { Grid } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 
 interface SplitButtonProps {
   onAgreeAction?: (

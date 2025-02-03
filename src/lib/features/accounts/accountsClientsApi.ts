@@ -15,6 +15,7 @@ export interface Client {
 
 export interface ClientsInterface {
   result: Array<Client>;
+  count?: number;
 }
 
 export interface UpdateClient {
@@ -36,9 +37,16 @@ export const clientsApi = createApi({
   tagTypes: ["Clients"],
 
   endpoints: (builder) => ({
-    getClients: builder.query<ClientsInterface | undefined, void>({
-      query: () => ({
+    getClients: builder.query<
+      ClientsInterface | undefined,
+      { page?: number; page_size?: number }
+    >({
+      query: (params) => ({
         url: "/accounts/clients",
+        params: {
+          page: params.page,
+          page_size: params.page_size,
+        }, // Параметр status передается напрямую
       }),
       providesTags: ["Clients"],
     }),

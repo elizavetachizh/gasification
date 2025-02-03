@@ -50,7 +50,7 @@ export default function FormCreateUserDialog({
   ) => {
     setCounterparty(selectedValue.id); // Сохраняем объект или null
   };
-  console.log(counterparty);
+
   const [createClient, { error, isLoading: isLoadingCreateUser, isSuccess }] =
     useCreateClientMutation();
 
@@ -104,13 +104,16 @@ export default function FormCreateUserDialog({
               noOptionsText={isError ? "Ошибка загрузки" : "Нет данных"}
               onInputChange={(_, value) => setInputValue(value)}
               onChange={handleChange}
+              sx={{ mb: 2 }}
               renderInput={(params) => (
                 <TextField
                   {...params}
                   label={"Выберите контрагента"}
-                  variant="outlined"
+                  variant="standard"
                   fullWidth
-                  error={!!error}
+                  required
+                  error={!!error || !counterparty}
+                  size="small"
                   // helperText={error}
                   InputProps={{
                     ...params.InputProps,
@@ -132,11 +135,10 @@ export default function FormCreateUserDialog({
               Введите email, на который пользователю будет выслан пароль
             </FormLabel>
             <TextField
-              autoFocus
               required
-              sx={{ marginTop: 0 }}
               id="name"
               name="email"
+              size="small"
               label="Email"
               type="email"
               fullWidth

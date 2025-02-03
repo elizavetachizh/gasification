@@ -27,6 +27,8 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import CollapseTableHistory from "@/src/components/table/CollapseTableHistory";
 import ToolbarComponent from "@/src/components/toolbar";
 import TablePaginationComponent from "@/src/components/table/tableWithPagination/pagination";
+import ButtonGroup from "@mui/material/ButtonGroup";
+import TableHeadComponent from "@/src/components/table/tableWithPagination/tableHead";
 
 interface TableWithPaginationInterface {
   typeTable?: string;
@@ -145,29 +147,34 @@ export default function TableWithPagination({
                         direction="row"
                         sx={{
                           justifyContent: "flex-end",
-                          alignItems: "flex-end",
+                          alignItems: "center",
                         }}
                       >
-                        <Button
-                          variant="contained"
-                          color="success"
-                          onClick={() =>
-                            handleAcceptSelectedAction
-                              ? handleAcceptSelectedAction(
-                                  selected,
-                                  setSelected,
-                                )
-                              : undefined
-                          }
+                        <ButtonGroup
+                          variant="text"
+                          aria-label="Basic button group"
                         >
-                          Принять
-                        </Button>
-                        <FormDialog
-                          date={date}
-                          setDateAction={setDateAction}
-                          selected={selected}
-                          setSelectedAction={setSelected}
-                        />
+                          <Button
+                            variant="contained"
+                            color="success"
+                            onClick={() =>
+                              handleAcceptSelectedAction
+                                ? handleAcceptSelectedAction(
+                                    selected,
+                                    setSelected,
+                                  )
+                                : undefined
+                            }
+                          >
+                            Принять
+                          </Button>
+                          <FormDialog
+                            date={date}
+                            setDateAction={setDateAction}
+                            selected={selected}
+                            setSelectedAction={setSelected}
+                          />
+                        </ButtonGroup>
                       </Grid>
                     ))}
                   {typeTable === "profile" && status === "on_confirm" && (
@@ -204,31 +211,8 @@ export default function TableWithPagination({
                       {typeTable === "dashboard" && status === "accepted" && (
                         <TableCell />
                       )}
-                      <TableCell sx={{ fontWeight: "bold" }}>№</TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>
-                        Дата подачи
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>
-                        ФИО заявителя
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>
-                        Контактный телефон
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>
-                        Вид производимых работ
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>
-                        Код объекта
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>
-                        Комплекс работ
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>
-                        Адрес объекта
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>
-                        Дата вызова представителя
-                      </TableCell>
+                      <TableHeadComponent />
+
                       {status === "accepted" && (
                         <TableCell sx={{ fontWeight: "bold" }}>
                           Соглавсованная дата
@@ -289,7 +273,7 @@ export default function TableWithPagination({
                               {DateConversion(order.created_at)}
                             </TableCell>
                             <TableCell>{order.applicant}</TableCell>
-                            <TableCell>{order.applicant}</TableCell>
+                            <TableCell>{order.phone_number}</TableCell>
                             <TableCell>
                               {order.order_type?.order_type}
                             </TableCell>

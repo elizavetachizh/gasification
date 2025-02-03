@@ -58,6 +58,7 @@ const AppBarComponent: React.FC<IAppBar> = ({ open, setOpen }) => {
   // Кнопка переключения темы
   const ThemeToggleButton: React.FC = () => {
     const { toggleTheme, mode } = useThemeModeContext();
+    console.log(mode)
     return (
       <IconButton onClick={toggleTheme} color="inherit">
         {mode === "dark" ? <LightMode /> : <DarkMode />}

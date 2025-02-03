@@ -1,5 +1,5 @@
 "use client";
-import { Typography } from "@mui/material";
+import { Card, Typography } from "@mui/material";
 import TableDashboard from "../../../components/table/tableDashboard";
 import * as React from "react";
 
@@ -9,7 +9,20 @@ export default function DashboardPage() {
       <Typography variant="h4" gutterBottom>
         Список заявок
       </Typography>
-      <TableDashboard />
+      <Card
+        variant="outlined"
+        sx={{
+          marginTop: 8,
+          maxHeight: "max-content",
+          maxWidth: "100%",
+          mx: "auto",
+          // to make the demo resizable
+          overflow: "auto",
+          resize: "horizontal",
+        }}
+      >
+        <TableDashboard />
+      </Card>
     </>
   );
 }
