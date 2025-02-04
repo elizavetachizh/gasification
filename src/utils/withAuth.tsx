@@ -30,7 +30,7 @@ const WithAuth: React.FC<WithAuthProps> = ({ children }) => {
       router.replace(`/profile/registration/?token=${token}`);
     } else if (resetToken) {
       router.replace(
-        `/profile/login/password-reset/password-reset-validate-token/?reset_token=${resetToken}`,
+        `/profile/login/password-reset/?reset_token=${resetToken}`,
       );
     } else {
       if (refreshToken) {

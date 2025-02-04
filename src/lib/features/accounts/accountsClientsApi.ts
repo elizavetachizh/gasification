@@ -39,14 +39,15 @@ export const clientsApi = createApi({
   endpoints: (builder) => ({
     getClients: builder.query<
       ClientsInterface | undefined,
-      { page?: number; page_size?: number }
+      { search?: string; page?: number; page_size?: number }
     >({
       query: (params) => ({
         url: "/accounts/clients",
         params: {
           page: params.page,
           page_size: params.page_size,
-        }, // Параметр status передается напрямую
+          search: params.search,
+        },
       }),
       providesTags: ["Clients"],
     }),

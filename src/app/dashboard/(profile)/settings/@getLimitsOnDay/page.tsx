@@ -19,8 +19,8 @@ import { ErrorAlertComponent } from "@/src/components/alert/error";
 export default function GetLimitsOnDayPage() {
   const { data: configSetupInfo, isLoading } = useGetConfigSetupQuery();
   const [putConfigSetup, { error, isSuccess }] = usePutConfigSetupMutation();
-  const [fridayLimit, setFridayLimit] = useState<number | null | undefined>(0);
-  const [dayLimit, setDayLimit] = useState<number | null | undefined>(0);
+  const [fridayLimit, setFridayLimit] = useState<number | null>(0);
+  const [dayLimit, setDayLimit] = useState<number | null>(0);
   const [timeStart, setTimeStart] = useState<string | undefined>("");
   const [timeEnd, setTimeEnd] = useState<string | undefined>("");
 
@@ -37,8 +37,10 @@ export default function GetLimitsOnDayPage() {
   };
 
   useEffect(() => {
-    setFridayLimit(configSetupInfo?.order_count_friday);
-    setDayLimit(configSetupInfo?.order_count_per_day);
+    setFridayLimit(
+      configSetupInfo ? configSetupInfo?.order_count_friday : null,
+    );
+    setDayLimit(configSetupInfo ? configSetupInfo?.order_count_per_day : null);
     setTimeStart(configSetupInfo?.time_start);
     setTimeEnd(configSetupInfo?.time_end);
   }, [configSetupInfo]);
@@ -62,7 +64,9 @@ export default function GetLimitsOnDayPage() {
         />
       )}
       <Paper sx={{ width: "60%", mb: 1, mt: 1, p: 2 }}>
-        <Typography variant="subtitle2">Общие настройки лимитов</Typography>
+        <Typography variant="subtitle2" sx={{ mb: 2 }}>
+          Общие настройки лимитов
+        </Typography>
         <Box
           component="form"
           sx={{ "& .MuiTextField-root": { m: 1, width: "25ch" } }}

@@ -103,7 +103,7 @@ function ProfilePage() {
               />
             )}
 
-            {error && (
+            {error && "data" in error && "selected_date" in error?.data && (
               <ErrorAlertComponent
                 isInitialOpen={!!error}
                 message={` Ошибка при создании заявки: ${error?.data?.selected_date?.toString()}`}
@@ -245,7 +245,9 @@ function ProfilePage() {
                       </CardActions>
                     </React.Fragment>
                   ) : (
-                    <p>Время подачи заявок с 8:00 до 12:00</p>
+                    <p>
+                      Прием подачи заявок закрыт. Пожалуйста, попробуйте позже
+                    </p>
                   )}
                 </CardContent>
               </Card>

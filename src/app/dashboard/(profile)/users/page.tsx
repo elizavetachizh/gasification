@@ -38,6 +38,7 @@ import { ErrorAlertComponent } from "@/src/components/alert/error";
 import TablePaginationComponent from "@/src/components/table/tableWithPagination/pagination";
 
 export default function UsersPage() {
+  const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [page_size, setPageSize] = useState(5);
   const [openMenu, setOpenMenu] = useState<null | HTMLElement>(null);
@@ -46,7 +47,11 @@ export default function UsersPage() {
   >(null);
   const [openResendEmailClientDialog, setOpenResendEmailClientDialog] =
     useState<null | number>(null);
-  const { data: clients, isLoading } = useGetClientsQuery({ page, page_size });
+  const { data: clients, isLoading } = useGetClientsQuery({
+    search,
+    page,
+    page_size,
+  });
   const [
     deleteClient,
     { isLoading: isLoadingDelete, isSuccess, error: errorDelete },
@@ -155,7 +160,9 @@ export default function UsersPage() {
                   id="standard-search"
                   label="Поиск пользователя по имени"
                   type="search"
+                  value={search}
                   size={"small"}
+                  onChange={(event) => setSearch(event.target.value)}
                   variant="standard"
                 />
               </div>
@@ -182,8 +189,7 @@ export default function UsersPage() {
               <TableBody>
                 {clients?.result?.map((client, index) => {
                   const labelId = `enhanced-table-checkbox-${index}`;
-                  const numberRow =
-                      page > 1 ? (page - 1) * page_size + 1 : 1;
+                  const numberRow = page > 1 ? (page - 1) * page_size + 1 : 1;
                   return (
                     <TableRow
                       key={client.id}

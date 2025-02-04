@@ -5,6 +5,7 @@ import {
 } from "@/src/lib/features/accounts/accountsApi";
 import React, { useEffect, useState } from "react";
 import {
+  Alert,
   Box,
   Button,
   FormControl,
@@ -18,18 +19,18 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useFormField } from "@/src/hooks/useFormField";
 import { useRouter } from "next/navigation";
 
-export default function PasswordResetValidateTokenPage() {
+export default function PasswordResetValidateToken() {
   // Получаем текущий URL
   const urlParams = new URLSearchParams(window.location.search);
   // Извлекаем значение параметра 'token'
   const token = urlParams.get("reset_token");
-  const [passwordResetValidateToken, { error: errorPasswordResetValidateToken }] =
-    usePasswordResetValidateTokenMutation();
-  const [passwordResetConfirm, { isLoading, error }] =
+  const [
+    passwordResetValidateToken,
+    { error: errorPasswordResetValidateToken },
+  ] = usePasswordResetValidateTokenMutation();
+  const [passwordResetConfirm, { isLoading, error, isSuccess }] =
     usePasswordResetConfirmMutation();
   const router = useRouter();
-  console.log(token);
-  console.log(window.location.search);
 
   useEffect(() => {
     passwordResetValidateToken(token);
@@ -61,22 +62,24 @@ export default function PasswordResetValidateTokenPage() {
   };
   const handlePasswordResetConfirm = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      await passwordResetConfirm({
-        password: passwordField.value,
-        token,
-      }).unwrap();
-      passwordField.reset();
-      confirmPassword.reset();
-      router.push("/login");
-    } catch (error) {
-      console.error(error);
-      passwordField.reset();
-      confirmPassword.reset();
-    }
-  };
 
-  return (
+    await passwordResetConfirm({
+      password: passwordField.value,
+      token,
+    }).unwrap();
+    passwordField.reset();
+    confirmPassword.reset();
+    if (isSuccess) await router.push("/profile/login");
+  };
+  console.log(isSuccess);
+  return errorPasswordResetValidateToken &&
+    "status" in errorPasswordResetValidateToken &&
+    (errorPasswordResetValidateToken.status === 400 ||
+      errorPasswordResetValidateToken.status === 404) ? (
+    <Alert severity="error">
+      Ссылка недействительна. Проверьте, пожалуйста, почту
+    </Alert>
+  ) : (
     <Box
       component="form"
       onSubmit={handlePasswordResetConfirm}
@@ -88,12 +91,14 @@ export default function PasswordResetValidateTokenPage() {
         fullWidth
         required
         margin="normal"
+        size={"small"}
         error={passwordField.error}
       >
         <InputLabel htmlFor="outlined-adornment-password">
           Введите новый пароль
         </InputLabel>
         <OutlinedInput
+          placeholder={"Введите новый пароль"}
           name="password"
           id="outlined-adornment-password"
           type={showPassword ? "text" : "password"}
@@ -120,6 +125,7 @@ export default function PasswordResetValidateTokenPage() {
         <FormHelperText>{passwordField.helperText}</FormHelperText>
       </FormControl>
       <FormControl
+        size={"small"}
         variant="outlined"
         fullWidth
         required
@@ -130,6 +136,7 @@ export default function PasswordResetValidateTokenPage() {
         </InputLabel>
         <OutlinedInput
           name="confirmPassword"
+          placeholder={"Повторите введенный пароль"}
           id="outlined-adornment-confirmPassword"
           type={showConfirmPassword ? "text" : "password"}
           value={confirmPassword.value}
@@ -159,11 +166,10 @@ export default function PasswordResetValidateTokenPage() {
         fullWidth
         variant="contained"
         disabled={isLoading || passwordField.value !== confirmPassword.value}
-        sx={{ mt: 3, mb: 2 }}
+        sx={{ my: 2 }}
       >
         {isLoading ? "Пожалуйста, подождите" : "Подтвердить смену пароля"}
       </Button>
     </Box>
   );
 }
-2;

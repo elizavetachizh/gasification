@@ -5,7 +5,7 @@ import React from "react";
 interface TablePaginationInterface {
   setPage: (page: number) => void;
   setPageSize: (pageSize: number) => void;
-  count: number;
+  count?: number;
   page: number;
   page_size: number;
 }

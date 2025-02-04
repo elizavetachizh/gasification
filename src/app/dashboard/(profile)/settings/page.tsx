@@ -14,7 +14,6 @@ import {
   Box,
   Button,
   FormControl,
-  FormLabel,
   Paper,
   TextField,
   Typography,
@@ -76,7 +75,7 @@ export default function SettingPage() {
     // Проверяем, является ли day экземпляром Dayjs
     const dateKey = day.format("YYYY-MM-DD");
 
-    const dayValue = dayValues[dateKey] || undefined;
+    const dayValue = dayValues ? dayValues[dateKey] : undefined;
 
     return (
       <Badge
@@ -185,10 +184,10 @@ export default function SettingPage() {
             }}
           >
             <FormControl>
-              <FormLabel> Введите лимит для выбранного дня:</FormLabel>
               <TextField
                 size="small"
-                label="Лимит"
+                label={"Введите лимит для выбранного дня:"}
+                placeholder="Введите лимит для выбранного дня"
                 type="number"
                 value={inputValue}
                 onChange={handleInputChange}
@@ -199,6 +198,7 @@ export default function SettingPage() {
             <Button
               variant="contained"
               size="small"
+              disabled={!selectedDate}
               onClick={() =>
                 handleCreateExceptionDate(selectedDate, inputValue)
               }

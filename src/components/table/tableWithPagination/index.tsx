@@ -80,7 +80,7 @@ export default function TableWithPagination({
   handleAgreeSelectedAction,
   handleRejectSelectedAction,
   handleAcceptSelectedAction,
-  date,
+  date = null,
   setDateAction,
   setPage,
   page,
@@ -208,9 +208,7 @@ export default function TableWithPagination({
                           />
                         </TableCell>
                       )}
-                      {typeTable === "dashboard" && status === "accepted" && (
-                        <TableCell />
-                      )}
+                      {status === "accepted" && <TableCell />}
                       <TableHeadComponent />
 
                       {status === "accepted" && (

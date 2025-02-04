@@ -60,13 +60,19 @@ export default function TableProfile() {
           }
           message={
             isSuccessDelete
-              ? "Выбранные заявки удалены!"
+              ? "Выбранная заявка отменена!"
               : isSuccessAgree
                 ? "Выбранные заявки приняты c предложенной датой!"
                 : isSuccessReject
                   ? "Выбранные заявки приняты с указанной вами датой!"
                   : ""
           }
+        />
+      )}
+      {isSuccessReject && (
+        <SuccessAlertComponent
+          isInitialOpen={isSuccessReject}
+          message={"Выбранные заявки приняты с указанной вами датой!"}
         />
       )}
       {(isErrorDelete || isErrorAgree || isErrorReject) && (

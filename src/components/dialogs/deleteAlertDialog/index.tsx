@@ -47,7 +47,7 @@ export default function AlertDialog({
       >
         <DialogTitle id="alert-dialog-title">
           {dataTypeToDelete === "request"
-            ? "Подтвердить удаление записи?"
+            ? "Подтвердить отмену заявки?"
             : "Подтвердить блокировку пользователя?"}
         </DialogTitle>
         <DialogActions>
@@ -58,7 +58,7 @@ export default function AlertDialog({
             onClick={handleDelete}
             autoFocus
           >
-            {dataTypeToDelete === "request" ? "Удалить" : "Заблокировать"}
+            {dataTypeToDelete === "request" ? "Подтвердить" : "Заблокировать"}
           </Button>
         </DialogActions>
       </Dialog>
