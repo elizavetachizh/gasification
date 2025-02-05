@@ -39,7 +39,13 @@ export const clientsApi = createApi({
   endpoints: (builder) => ({
     getClients: builder.query<
       ClientsInterface | undefined,
-      { search?: string; page?: number; page_size?: number }
+      {
+        search?: string;
+        page?: number;
+        page_size?: number;
+        is_active?: boolean;
+        ordering?: string;
+      }
     >({
       query: (params) => ({
         url: "/accounts/clients",
@@ -47,6 +53,8 @@ export const clientsApi = createApi({
           page: params.page,
           page_size: params.page_size,
           search: params.search,
+          is_active: params.is_active,
+          ordering: params.ordering,
         },
       }),
       providesTags: ["Clients"],

@@ -9,14 +9,19 @@ import {
   Checkbox,
   Chip,
   CircularProgress,
+  FormControl,
   IconButton,
+  InputLabel,
   Paper,
+  Select,
+  SelectChangeEvent,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  TableSortLabel,
   TextField,
   Toolbar,
   Tooltip,
@@ -36,11 +41,14 @@ import ResendUserEmailDialog from "@/src/components/dialogs/resendUserEmailDialo
 import { SuccessAlertComponent } from "@/src/components/alert/success";
 import { ErrorAlertComponent } from "@/src/components/alert/error";
 import TablePaginationComponent from "@/src/components/table/tableWithPagination/pagination";
+import { visuallyHidden } from "@mui/utils";
 
 export default function UsersPage() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [page_size, setPageSize] = useState(5);
+  const [is_active, setIsActive] = useState<string>("");
+  const [ordering, setOrdering] = useState("");
   const [openMenu, setOpenMenu] = useState<null | HTMLElement>(null);
   const [openBlockUserDialog, setOpenBlockUserDialog] = useState<
     null | number | boolean
@@ -51,6 +59,8 @@ export default function UsersPage() {
     search,
     page,
     page_size,
+    is_active,
+    ordering,
   });
   const [
     deleteClient,
@@ -94,6 +104,17 @@ export default function UsersPage() {
     await resendEmailClient(id).unwrap();
     setOpenResendEmailClientDialog(null);
   };
+
+  const handleChange = (event: SelectChangeEvent<string>) => {
+    const selectedValue = event.target.value as unknown as boolean;
+    setIsActive(selectedValue); // Если пустое значение, то передаём `null`
+  };
+
+  const createSortHandler = (ordering: string) => {
+    console.log(ordering);
+    setOrdering(ordering);
+  };
+  console.log(ordering);
 
   return (
     <>
@@ -154,9 +175,15 @@ export default function UsersPage() {
                 },
               ]}
             >
-              <div style={{ flex: "1 1 100%" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  flex: "1 1 100%",
+                }}
+              >
                 <TextField
-                  sx={{ minWidth: "250px" }}
+                  sx={{ minWidth: "250px", mr:3 }}
                   id="standard-search"
                   label="Поиск пользователя по имени"
                   type="search"
@@ -165,7 +192,23 @@ export default function UsersPage() {
                   onChange={(event) => setSearch(event.target.value)}
                   variant="standard"
                 />
+                <FormControl variant="standard" sx={{ minWidth: "250px" }}>
+                  <InputLabel id="demo-simple-select-label">
+                    Статус пользователя
+                  </InputLabel>
+                  <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    value={is_active}
+                    label="Статус пользователя"
+                    onChange={handleChange}
+                  >
+                    <MenuItem value={"true"}>Активный</MenuItem>
+                    <MenuItem value={"false"}>Заблокирован</MenuItem>
+                  </Select>
+                </FormControl>
               </div>
+
               <Tooltip title="Добавить нового пользователя">
                 <IconButton onClick={handleClickOpen}>
                   <AddIcon />
@@ -180,8 +223,38 @@ export default function UsersPage() {
                 <TableRow>
                   <TableCell></TableCell>
                   <TableCell>№</TableCell>
-                  <TableCell>Имя</TableCell>
-                  <TableCell>email</TableCell>
+                  <TableCell sortDirection={ordering === "name"}>
+                    <TableSortLabel
+                      active={ordering === "name"}
+                      direction={ordering === "name" ? "desc" : "asc"}
+                      onClick={() => createSortHandler("name")}
+                    >
+                      Имя
+                      {ordering === "name" ? (
+                        <Box component="span" sx={visuallyHidden}>
+                          {ordering === "name"
+                            ? "sorted descending"
+                            : "sorted ascending"}
+                        </Box>
+                      ) : null}
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell sortDirection={ordering === "email"}>
+                    <TableSortLabel
+                      active={ordering === "email"}
+                      direction={ordering === "email" ? "desc" : "asc"}
+                      onClick={() => createSortHandler("email")}
+                    >
+                      email
+                      {ordering === "email" ? (
+                        <Box component="span" sx={visuallyHidden}>
+                          {ordering === "email"
+                            ? "sorted descending"
+                            : "sorted ascending"}
+                        </Box>
+                      ) : null}
+                    </TableSortLabel>
+                  </TableCell>
                   <TableCell>Статус</TableCell>
                   <TableCell />
                 </TableRow>
@@ -213,7 +286,7 @@ export default function UsersPage() {
                       <TableCell>{client.email}</TableCell>
                       <TableCell>
                         {client?.is_approved === false ? (
-                          <Chip label="Chip Filled" />
+                          <Chip label="Не подтвержден" />
                         ) : client.is_active ? (
                           <Chip label="Активный" size="small" color="success" />
                         ) : (
@@ -242,20 +315,34 @@ export default function UsersPage() {
                             open={Boolean(openMenu)}
                             onClose={() => setOpenMenu(null)}
                           >
-                            <MenuItem
-                              onClick={() =>
-                                setOpenResendEmailClientDialog(client.id)
-                              }
-                            >
-                              Отправить письмо для подтверждения регистрации
-                            </MenuItem>
-                            <MenuItem
-                              onClick={() =>
-                                handleOpenBlockUserDialog(client.id)
-                              }
-                            >
-                              Заблокировать
-                            </MenuItem>
+                            {client.is_approved === true ? (
+                              <MenuItem
+                                onClick={() =>
+                                  setOpenResendEmailClientDialog(client.id)
+                                }
+                              >
+                                Повторная отправка письма для регистрации
+                              </MenuItem>
+                            ) : (
+                              <></>
+                            )}
+                            {!client.is_active ? (
+                              <MenuItem
+                                onClick={() =>
+                                  handleOpenBlockUserDialog(client.id)
+                                }
+                              >
+                                Заблокировать
+                              </MenuItem>
+                            ) : (
+                              <MenuItem
+                                onClick={() =>
+                                  handleOpenBlockUserDialog(client.id)
+                                }
+                              >
+                                Разблокировать
+                              </MenuItem>
+                            )}
                           </Menu>
                         </div>
                       </TableCell>

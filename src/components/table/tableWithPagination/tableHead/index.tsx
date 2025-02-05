@@ -17,8 +17,10 @@ const columnsData = [
 ];
 
 const ResizableTableCell = styled(TableCell)`
-  white-space: nowrap;
-  font-weight: bold;
+  //white-space: nowrap;
+  //font-weight: bold;
+  word-wrap: break-word;
+  text-align: center;
   div.resizer {
     position: absolute;
     top: 1rem;
