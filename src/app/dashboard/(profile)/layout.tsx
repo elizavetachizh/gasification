@@ -1,7 +1,5 @@
 "use client";
-import ThemeModeContextProvider, {
-  useThemeModeContext,
-} from "@/src/context/theme";
+import { useThemeModeContext } from "@/src/context/theme";
 import { Box, Toolbar, Typography } from "@mui/material";
 import AppBarWithDrawerComponent from "@/src/components/appBarWithDrawer";
 import * as React from "react";
@@ -14,16 +12,14 @@ export default function ProfileLayout({
 }>) {
   const { data: userData } = useGetUserQuery();
   const { mode } = useThemeModeContext();
-
   return (
-    <ThemeModeContextProvider>
       <Box sx={{ display: "flex" }}>
         <AppBarWithDrawerComponent />
         <Box
           component="main"
           sx={{
             flexGrow: 1,
-            backgroundColor: `${mode === "dark" ? "#121212" : "hsla(215, 15%, 97%, 0.5)"}`,
+            backgroundColor: `${mode === "dark" ? "#121212 !important" : "hsla(215, 15%, 97%, 0.5)"}`,
             p: 3,
             minHeight: "100vh",
           }}
@@ -43,6 +39,5 @@ export default function ProfileLayout({
           )}
         </Box>
       </Box>
-    </ThemeModeContextProvider>
   );
 }

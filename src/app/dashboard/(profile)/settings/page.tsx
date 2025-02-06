@@ -14,7 +14,6 @@ import {
   Box,
   Button,
   FormControl,
-  Paper,
   TextField,
   Typography,
 } from "@mui/material";
@@ -148,7 +147,7 @@ export default function SettingPage() {
           isInitialOpen={!!error}
         />
       )}
-      <Paper sx={{ width: "70%", mb: 1, mt: 1, p: 2 }}>
+      <Box sx={{ p: 2 }}>
         <Typography variant="subtitle2">
           Дополнительные настройки лимитов на конкретную дату
         </Typography>
@@ -156,14 +155,16 @@ export default function SettingPage() {
           display="flex"
           gap={2}
           component="form"
-          sx={{ "& .MuiTextField-root": { m: 1, width: "25ch" } }}
-          // noValidate
-          // autoComplete="on"
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            "& .MuiTextField-root": { m: 1, width: "25ch" },
+          }}
         >
           <Box>
             <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ru">
               <DateCalendar
-                sx={{ width: "400px", margin: "0 auto" }}
+                sx={{ width: "400px", margin: "0 auto", maxHeight: "300px" }}
                 value={selectedDate ? dayjs(selectedDate) : null}
                 onChange={handleDaySelect}
                 onMonthChange={handleMonthChange} // Добавлен обработчик изменения месяца
@@ -207,7 +208,7 @@ export default function SettingPage() {
             </Button>
           </Box>
         </Box>
-      </Paper>
+      </Box>
     </React.Fragment>
   );
 }

@@ -32,9 +32,6 @@ import AddIcon from "@mui/icons-material/Add";
 import FormCreateUserDialog from "@/src/components/dialogs/formCreateUserDialog";
 import ToolbarComponent from "@/src/components/toolbar";
 import AlertDialog from "@/src/components/dialogs/deleteAlertDialog";
-import { useHandleSelected } from "@/src/hooks/useHandleSelected";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import BlockUserDialog from "@/src/components/dialogs/blockUserDialog";
 import ResendUserEmailDialog from "@/src/components/dialogs/resendUserEmailDialog";
@@ -42,19 +39,21 @@ import { SuccessAlertComponent } from "@/src/components/alert/success";
 import { ErrorAlertComponent } from "@/src/components/alert/error";
 import TablePaginationComponent from "@/src/components/table/tableWithPagination/pagination";
 import { visuallyHidden } from "@mui/utils";
+import SearchIcon from "@mui/icons-material/Search";
+import MenuComponent from "@/src/components/menu";
+import { useHandleSelected } from "@/src/hooks/useHandleSelected";
 
 export default function UsersPage() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [page_size, setPageSize] = useState(5);
-  const [is_active, setIsActive] = useState<string>("");
+  const [is_active, setIsActive] = useState<string | undefined>("");
   const [ordering, setOrdering] = useState("");
-  const [openMenu, setOpenMenu] = useState<null | HTMLElement>(null);
-  const [openBlockUserDialog, setOpenBlockUserDialog] = useState<
-    null | number | boolean
-  >(null);
+  const [open, setOpen] = useState(false);
+  const [openBlockUserDialog, setOpenBlockUserDialog] = useState<string>("");
   const [openResendEmailClientDialog, setOpenResendEmailClientDialog] =
     useState<null | number>(null);
+
   const { data: clients, isLoading } = useGetClientsQuery({
     search,
     page,
@@ -80,8 +79,6 @@ export default function UsersPage() {
     );
   };
 
-  const [open, setOpen] = useState(false);
-
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -93,28 +90,23 @@ export default function UsersPage() {
   const { handleAction: handleDeleteSelected } =
     useHandleSelected(deleteClient);
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setOpenMenu(event.currentTarget);
-  };
-  const handleOpenBlockUserDialog = (id: number) => {
-    setOpenBlockUserDialog(id);
-  };
-
   const handleResendEmailClient = async (id: number) => {
     await resendEmailClient(id).unwrap();
     setOpenResendEmailClientDialog(null);
   };
 
-  const handleChange = (event: SelectChangeEvent<string>) => {
-    const selectedValue = event.target.value as unknown as boolean;
-    setIsActive(selectedValue); // Если пустое значение, то передаём `null`
+  const handleChange = (event: SelectChangeEvent) => {
+    const selectedValue = event.target.value;
+    setIsActive(selectedValue);
   };
 
-  const createSortHandler = (ordering: string) => {
-    console.log(ordering);
-    setOrdering(ordering);
+  const createSortHandler = (property: string) => {
+    setOrdering((prevOrdering) => {
+      if (prevOrdering === property) return `-${property}`; // Было "name" → станет "-name"
+      if (prevOrdering === `-${property}`) return ""; // Было "-name" → станет ""
+      return property; // Было "" или другое поле → станет "name"
+    });
   };
-  console.log(ordering);
 
   return (
     <>
@@ -178,20 +170,23 @@ export default function UsersPage() {
               <div
                 style={{
                   display: "flex",
-                  alignItems: "baseline",
+                  alignItems: "flex-end",
                   flex: "1 1 100%",
                 }}
               >
-                <TextField
-                  sx={{ minWidth: "250px", mr:3 }}
-                  id="standard-search"
-                  label="Поиск пользователя по имени"
-                  type="search"
-                  value={search}
-                  size={"small"}
-                  onChange={(event) => setSearch(event.target.value)}
-                  variant="standard"
-                />
+                <Box sx={{ display: "flex", alignItems: "flex-end" }}>
+                  <SearchIcon sx={{ color: "action.active" }} />
+                  <TextField
+                    sx={{ minWidth: "250px", mr: 3 }}
+                    id="standard-search"
+                    label="Поиск пользователя по имени"
+                    type="search"
+                    value={search}
+                    size={"small"}
+                    onChange={(event) => setSearch(event.target.value)}
+                    variant="standard"
+                  />
+                </Box>
                 <FormControl variant="standard" sx={{ minWidth: "250px" }}>
                   <InputLabel id="demo-simple-select-label">
                     Статус пользователя
@@ -203,6 +198,9 @@ export default function UsersPage() {
                     label="Статус пользователя"
                     onChange={handleChange}
                   >
+                    <MenuItem value={""}>
+                      <em>Выберите статус пользователя</em>
+                    </MenuItem>
                     <MenuItem value={"true"}>Активный</MenuItem>
                     <MenuItem value={"false"}>Заблокирован</MenuItem>
                   </Select>
@@ -223,39 +221,40 @@ export default function UsersPage() {
                 <TableRow>
                   <TableCell></TableCell>
                   <TableCell>№</TableCell>
-                  <TableCell sortDirection={ordering === "name"}>
+                  <TableCell
+                    sortDirection={ordering === "-name" ? "desc" : "asc"}
+                  >
                     <TableSortLabel
-                      active={ordering === "name"}
-                      direction={ordering === "name" ? "desc" : "asc"}
+                      active={ordering === "name" || ordering === "-name"}
+                      direction={ordering === "-name" ? "desc" : "asc"}
                       onClick={() => createSortHandler("name")}
                     >
                       Имя
-                      {ordering === "name" ? (
-                        <Box component="span" sx={visuallyHidden}>
-                          {ordering === "name"
-                            ? "sorted descending"
-                            : "sorted ascending"}
-                        </Box>
-                      ) : null}
+                      <Box component="span" sx={visuallyHidden}>
+                        {ordering === "name"
+                          ? "сортировка по возрастанию"
+                          : "сортировка по убыванию"}
+                      </Box>
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell sortDirection={ordering === "email"}>
+                  <TableCell
+                    sortDirection={ordering === "-email" ? "desc" : "asc"}
+                  >
                     <TableSortLabel
-                      active={ordering === "email"}
-                      direction={ordering === "email" ? "desc" : "asc"}
+                      active={ordering === "email" || ordering === "-email"}
+                      direction={ordering === "-email" ? "desc" : "asc"}
                       onClick={() => createSortHandler("email")}
                     >
                       email
-                      {ordering === "email" ? (
-                        <Box component="span" sx={visuallyHidden}>
-                          {ordering === "email"
-                            ? "sorted descending"
-                            : "sorted ascending"}
-                        </Box>
-                      ) : null}
+                      <Box component="span" sx={visuallyHidden}>
+                        {ordering === "email"
+                          ? "сортировка по возрастанию"
+                          : "сортировка по убыванию"}
+                      </Box>
                     </TableSortLabel>
                   </TableCell>
                   <TableCell>Статус</TableCell>
+                  <TableCell>Последний вход</TableCell>
                   <TableCell />
                 </TableRow>
               </TableHead>
@@ -285,9 +284,7 @@ export default function UsersPage() {
                       <TableCell>{client.name}</TableCell>
                       <TableCell>{client.email}</TableCell>
                       <TableCell>
-                        {client?.is_approved === false ? (
-                          <Chip label="Не подтвержден" />
-                        ) : client.is_active ? (
+                        {client.is_active ? (
                           <Chip label="Активный" size="small" color="success" />
                         ) : (
                           <Chip
@@ -296,54 +293,28 @@ export default function UsersPage() {
                             color="error"
                           />
                         )}
+                        {client?.is_approved === false && (
+                          <Chip
+                            sx={{ ml: 2 }}
+                            size="small"
+                            label="Не подтвержден"
+                          />
+                        )}
                       </TableCell>
+                      <TableCell>{client?.last_login}</TableCell>
                       <TableCell>
                         <div>
-                          <IconButton
-                            aria-label="more"
-                            id="long-button"
-                            aria-controls={open ? "long-menu" : undefined}
-                            aria-expanded={open ? "true" : undefined}
-                            aria-haspopup="true"
-                            onClick={handleClick}
-                          >
-                            <MoreVertIcon />
-                          </IconButton>
-                          <Menu
-                            id="long-menu"
-                            anchorEl={openMenu}
-                            open={Boolean(openMenu)}
-                            onClose={() => setOpenMenu(null)}
-                          >
-                            {client.is_approved === true ? (
-                              <MenuItem
-                                onClick={() =>
-                                  setOpenResendEmailClientDialog(client.id)
-                                }
-                              >
-                                Повторная отправка письма для регистрации
-                              </MenuItem>
-                            ) : (
-                              <></>
-                            )}
-                            {!client.is_active ? (
-                              <MenuItem
-                                onClick={() =>
-                                  handleOpenBlockUserDialog(client.id)
-                                }
-                              >
-                                Заблокировать
-                              </MenuItem>
-                            ) : (
-                              <MenuItem
-                                onClick={() =>
-                                  handleOpenBlockUserDialog(client.id)
-                                }
-                              >
-                                Разблокировать
-                              </MenuItem>
-                            )}
-                          </Menu>
+                          <MenuComponent
+                            id={client.id}
+                            setOpenBlockUserDialogAction={
+                              setOpenBlockUserDialog
+                            }
+                            setOpenResendEmailClientDialogAction={
+                              setOpenResendEmailClientDialog
+                            }
+                            is_active={client.is_active}
+                            is_approved={client.is_approved}
+                          />
                         </div>
                       </TableCell>
                     </TableRow>
@@ -364,11 +335,8 @@ export default function UsersPage() {
       {open && <FormCreateUserDialog handleClose={handleClose} open={open} />}
       {openBlockUserDialog && (
         <BlockUserDialog
-          open={!!openBlockUserDialog}
+          open={openBlockUserDialog}
           setOpen={setOpenBlockUserDialog}
-          handleDelete={async () => {
-            await handleDeleteSelected(selected, setSelected);
-          }}
         />
       )}
       {openResendEmailClientDialog && (

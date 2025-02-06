@@ -6,7 +6,7 @@ export interface Client {
   password: string;
   counterparty: number;
   id: 2;
-  is_active: boolean;
+  is_active: string;
   is_approved: boolean | undefined;
   last_login: null;
   login: string;
@@ -80,6 +80,20 @@ export const clientsApi = createApi({
       }),
       invalidatesTags: ["Clients"],
     }),
+    blockClient: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `/accounts/clients/${id}/block/`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Clients"],
+    }),
+    unblockClient: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `/accounts/clients/${id}/unblock/`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Clients"],
+    }),
     putClient: builder.mutation<UpdateClient, Partial<UpdateClient>>({
       query: (client) => ({
         url: `/accounts/clients${client.id}/`,
@@ -105,4 +119,6 @@ export const {
   useResendEmailClientMutation,
   useDeleteClientMutation,
   useCreateClientMutation,
+  useBlockClientMutation,
+  useUnblockClientMutation,
 } = clientsApi;

@@ -20,6 +20,7 @@ export interface ConfigSetupInterface {
   order_count_friday: number | null;
   time_start: string;
   time_end: string;
+  updated_at?:string;
 }
 
 export interface OrdersAvailableInterface {

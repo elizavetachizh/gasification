@@ -12,7 +12,6 @@ export default function DashboardPage() {
       <Card
         variant="outlined"
         sx={{
-          marginTop: 8,
           maxHeight: "max-content",
           maxWidth: "100%",
           mx: "auto",

@@ -5,7 +5,6 @@ import {
   Button,
   CircularProgress,
   FormControl,
-  Paper,
   TextField,
   Typography,
 } from "@mui/material";
@@ -15,6 +14,7 @@ import {
 } from "@/src/lib/features/config/exceptionDateApi";
 import { SuccessAlertComponent } from "@/src/components/alert/success";
 import { ErrorAlertComponent } from "@/src/components/alert/error";
+import { DateConversion } from "@/src/utils/dateConversion";
 
 export default function GetLimitsOnDayPage() {
   const { data: configSetupInfo, isLoading } = useGetConfigSetupQuery();
@@ -63,7 +63,7 @@ export default function GetLimitsOnDayPage() {
           isInitialOpen={!!error}
         />
       )}
-      <Paper sx={{ width: "60%", mb: 1, mt: 1, p: 2 }}>
+      <Box sx={{ p: 2 }}>
         <Typography variant="subtitle2" sx={{ mb: 2 }}>
           Общие настройки лимитов
         </Typography>
@@ -135,7 +135,13 @@ export default function GetLimitsOnDayPage() {
         >
           Сохранить
         </Button>
-      </Paper>
+        <Typography>
+          <em>
+            *Последние обновления настроек производились{" "}
+            {DateConversion(configSetupInfo?.updated_at)}
+          </em>
+        </Typography>
+      </Box>
     </>
   );
 }

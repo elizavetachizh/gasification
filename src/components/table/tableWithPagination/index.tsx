@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { OrderOriginal } from "@/src/lib/features/orders/ordersApi";
 import SplitButton from "@/src/components/table/tableWithPagination/buttonGroup";
 import { DateConversion } from "@/src/utils/dateConversion";
@@ -103,6 +103,10 @@ export default function TableWithPagination({
     );
   };
 
+  const handleOpenClientHistory = useCallback((id: number) => {
+    setOpen((prevState) => (prevState === id ? null : id));
+  }, []);
+
   return (
     <React.Fragment>
       {isLoading ? (
@@ -188,7 +192,7 @@ export default function TableWithPagination({
                 </React.Fragment>
               )}
               <TableContainer component={Paper} sx={{ maxHeight: 550 }}>
-                <Table stickyHeader>
+                <Table size={"small"} stickyHeader>
                   <TableHead>
                     <TableRow>
                       {((typeTable === "profile" && status !== "accepted") ||
@@ -212,12 +216,16 @@ export default function TableWithPagination({
                       <TableHeadComponent />
 
                       {status === "accepted" && (
-                        <TableCell sx={{ fontWeight: "bold" }}>
+                        <TableCell
+                          sx={{ wordWrap: "break-word", textAlign: "center" }}
+                        >
                           Соглавсованная дата
                         </TableCell>
                       )}
                       {status === "on_confirm" && (
-                        <TableCell sx={{ fontWeight: "bold" }}>
+                        <TableCell
+                          sx={{ wordWrap: "break-word", textAlign: "center" }}
+                        >
                           {typeTable === "profile"
                             ? "Предлагаемая дата вызова"
                             : "Предложенная дата переноса"}
@@ -256,7 +264,9 @@ export default function TableWithPagination({
                                 <IconButton
                                   aria-label="expand row"
                                   size="small"
-                                  onClick={() => setOpen(order.id)}
+                                  onClick={() =>
+                                    handleOpenClientHistory(order.id)
+                                  }
                                 >
                                   {open === order.id ? (
                                     <KeyboardArrowUpIcon />

@@ -1,4 +1,4 @@
-import { Typography } from "@mui/material";
+import { Paper, Typography } from "@mui/material";
 import React from "react";
 
 export default function DashBoardLayout({
@@ -13,8 +13,10 @@ export default function DashBoardLayout({
       <Typography variant="h4" gutterBottom>
         Настройки лимитов на заявки
       </Typography>
-      {getLimitsOnDay}
-      {children}
+      <Paper sx={{ width: "100%", mb: 2 }}>
+        {getLimitsOnDay}
+        {children}
+      </Paper>
     </>
   );
 }

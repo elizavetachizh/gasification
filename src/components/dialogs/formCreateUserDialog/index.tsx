@@ -151,8 +151,8 @@ export default function FormCreateUserDialog({
           </FormControl>
 
           <DialogContentText>
-            {" "}
-            Пользователю будет выслан пароль на указанный email.
+            На указанный email пользователю будет выслана ссылка для дальнейшей
+            регистрации.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

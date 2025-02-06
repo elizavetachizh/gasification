@@ -1,6 +1,13 @@
 "use client";
 import React from "react";
-import { Avatar, IconButton, Toolbar, Typography } from "@mui/material";
+import {
+  Avatar,
+  Divider,
+  IconButton,
+  ListItem,
+  Toolbar,
+  Typography,
+} from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { styled } from "@mui/material/styles";
 import MuiAppBar from "@mui/material/AppBar";
@@ -58,7 +65,7 @@ const AppBarComponent: React.FC<IAppBar> = ({ open, setOpen }) => {
   // Кнопка переключения темы
   const ThemeToggleButton: React.FC = () => {
     const { toggleTheme, mode } = useThemeModeContext();
-    console.log(mode)
+    console.log(mode);
     return (
       <IconButton onClick={toggleTheme} color="inherit">
         {mode === "dark" ? <LightMode /> : <DarkMode />}
@@ -119,31 +126,32 @@ const AppBarComponent: React.FC<IAppBar> = ({ open, setOpen }) => {
           open={Boolean(anchorEl)}
           onClose={handleClose}
         >
-          <MenuItem>
+          <ListItem>
             <Typography sx={{ textAlign: "center" }}>
               Подразделение: СЗ
             </Typography>
-          </MenuItem>
-          <MenuItem>
+          </ListItem>
+          <ListItem>
             <Typography sx={{ textAlign: "center" }}>
               Табельный номер: 10858
             </Typography>
-          </MenuItem>
-          <MenuItem>
+          </ListItem>
+          <ListItem>
             <Typography sx={{ textAlign: "center" }}>
               Email: johndoe@example.com
             </Typography>
-          </MenuItem>
-          <MenuItem>
+          </ListItem>
+          <ListItem>
             <Typography sx={{ textAlign: "center" }}>
               Контактный телефон: +375444640092
             </Typography>
-          </MenuItem>
-          <MenuItem>
+          </ListItem>
+          <ListItem>
             <Typography sx={{ textAlign: "center" }}>
               ФИО: Иванов Иван Иванович
             </Typography>
-          </MenuItem>
+          </ListItem>
+          <Divider />
           <MenuItem onClick={handleLogout}>Выйти</MenuItem>
         </Menu>
         <Typography variant="h6" noWrap>
