@@ -6,7 +6,6 @@ import {
   FormLabel,
   MenuItem,
   Select,
-  CircularProgress,
   SelectChangeEvent,
 } from "@mui/material";
 import { useGetOrderTypesQuery } from "@/src/lib/features/orders/orderTypesApi";
@@ -25,7 +24,6 @@ const OrderTypeSelect: React.FC<OrderTypeSelectProps> = ({
     onChange(selectedValue); // Если пустое значение, то передаём `null`
   };
 
-  if (isLoading) return <CircularProgress />;
   if (isError)
     return (
       <p style={{ color: "red" }}>
@@ -43,9 +41,10 @@ const OrderTypeSelect: React.FC<OrderTypeSelectProps> = ({
         size="small"
         id="construction-object-select"
         value={value || ""}
+        disabled={isLoading}
         onChange={handleChange}
         displayEmpty
-        label={"Вид работ"}
+        label={isLoading ? "Загрузка..." : "Вид работ"}
       >
         <MenuItem disabled={true} value={""}>
           Вид работ

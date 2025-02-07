@@ -30,7 +30,7 @@ interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
 }
 
-const AppBarComponent: React.FC<IAppBar> = ({ open, setOpen }) => {
+const AppBarComponent: React.FC<IAppBar> = ({ open, setOpen, is_staff }) => {
   const accessToken = useAppSelector(
     (state: RootState) => state.auth.accessToken,
   );
@@ -65,7 +65,6 @@ const AppBarComponent: React.FC<IAppBar> = ({ open, setOpen }) => {
   // Кнопка переключения темы
   const ThemeToggleButton: React.FC = () => {
     const { toggleTheme, mode } = useThemeModeContext();
-    console.log(mode);
     return (
       <IconButton onClick={toggleTheme} color="inherit">
         {mode === "dark" ? <LightMode /> : <DarkMode />}
@@ -94,20 +93,22 @@ const AppBarComponent: React.FC<IAppBar> = ({ open, setOpen }) => {
   return (
     <AppBar open={open} position="fixed">
       <Toolbar>
-        <IconButton
-          color="inherit"
-          aria-label="open drawer"
-          onClick={handleDrawerOpen}
-          edge="start"
-          sx={[
-            {
-              marginRight: 5,
-            },
-            !!open && { display: "none" },
-          ]}
-        >
-          <MenuIcon />
-        </IconButton>
+        {is_staff && (
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            onClick={handleDrawerOpen}
+            edge="start"
+            sx={[
+              {
+                marginRight: 5,
+              },
+              !!open && { display: "none" },
+            ]}
+          >
+            <MenuIcon />
+          </IconButton>
+        )}
         <Avatar sx={{ mr: 2 }} onClick={handleMenu}>
           U
         </Avatar>

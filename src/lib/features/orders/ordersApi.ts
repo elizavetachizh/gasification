@@ -54,6 +54,24 @@ export const ordersApi = createApi({
       }),
       providesTags: ["Orders"],
     }),
+    getCreatedOrdersCount: builder.query<number, void>({
+      query: () => ({
+        url: "/orders/?status=created",
+      }),
+      transformResponse: (response: { count: number }) => response.count, // Оставляем только count
+    }),
+    getAcceptedOrdersCount: builder.query<number, void>({
+      query: () => ({
+        url: "/orders/?status=accepted",
+      }),
+      transformResponse: (response: { count: number }) => response.count, // Оставляем только count
+    }),
+    getOnConfirmOrdersCount: builder.query<number, void>({
+      query: () => ({
+        url: "/orders/?status=on_confirm",
+      }),
+      transformResponse: (response: { count: number }) => response.count, // Оставляем только count
+    }),
     createOrder: builder.mutation<Order, Partial<Order>>({
       query: (newOrder) => ({
         url: "/orders/",
@@ -111,6 +129,9 @@ export const ordersApi = createApi({
 
 export const {
   useGetOrdersQuery,
+  useGetCreatedOrdersCountQuery,
+    useGetOnConfirmOrdersCountQuery,
+    useGetAcceptedOrdersCountQuery,
   useCreateOrderMutation,
   useAcceptedOrderMutation,
   useAgreedOrderMutation,

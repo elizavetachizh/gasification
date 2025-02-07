@@ -6,7 +6,6 @@ import {
   FormLabel,
   MenuItem,
   Select,
-  CircularProgress,
   SelectChangeEvent,
 } from "@mui/material";
 import { useGetConstructionObjectsQuery } from "@/src/lib/features/constructionObjects/constructionObjectsApi";
@@ -29,7 +28,6 @@ const ConstructionObjectSelect: React.FC<ConstructionObjectSelectProps> = ({
       work_packages: selectedElement?.work_packages,
     });
   };
-  if (isLoading) return <CircularProgress />;
   if (isError)
     return (
       <p style={{ color: "red" }}>
@@ -38,7 +36,7 @@ const ConstructionObjectSelect: React.FC<ConstructionObjectSelectProps> = ({
           "Не удалось загрузить объекты"}
       </p>
     );
-  console.log(data);
+
   return (
     <FormControl>
       <FormLabel>Выберите объект</FormLabel>
@@ -47,10 +45,11 @@ const ConstructionObjectSelect: React.FC<ConstructionObjectSelectProps> = ({
         id="construction-object-select"
         value={value || ""}
         error={!value}
+        disabled={isLoading}
         onChange={handleChange}
         displayEmpty
         label={"Код объекта"}
-        placeholder={"Код объекта"}
+        placeholder={isLoading ? "Загрузка..." : "Код объекта"}
       >
         <MenuItem disabled={true} value={""}>
           Код объекта

@@ -1,12 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "@/src/lib/store";
 import {
   useAgreedOrderMutation,
   useCanceledOrderMutation,
-  useGetOrdersQuery,
   useRejectedOrderMutation,
 } from "@/src/lib/features/orders/ordersApi";
 import { useHandleSelected } from "@/src/hooks/useHandleSelected";
@@ -15,18 +12,6 @@ import { SuccessAlertComponent } from "@/src/components/alert/success";
 import { ErrorAlertComponent } from "@/src/components/alert/error";
 
 export default function TableProfile() {
-  const [page, setPage] = useState(1);
-  const [page_size, setPageSize] = useState(5);
-  const [status, setStatus] = useState("created");
-  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
-  const {
-    data: orders,
-    isLoading,
-    isFetching,
-  } = useGetOrdersQuery(
-    { status: status, page, page_size },
-    { skip: !accessToken },
-  );
   const [
     deleteOrder,
     { isSuccess: isSuccessDelete, isError: isErrorDelete, error: errorDelete },
@@ -90,22 +75,12 @@ export default function TableProfile() {
         />
       )}
       <TableWithPagination
-        orders={orders?.result}
-        count={orders?.count}
-        isLoading={isLoading}
-        isFetching={isFetching}
         selected={selected}
         setSelected={setSelected}
-        status={status}
-        setStatus={setStatus}
         onConfirmText={"Предложен перенос заявок"}
         handleAgreeSelectedAction={handleAgreeSelected}
         handleDeleteSelectedAction={handleDeleteSelected}
         handleRejectSelectedAction={handleRejectSelected}
-        setPage={setPage}
-        page={page}
-        setPageSize={setPageSize}
-        page_size={page_size}
       />
     </>
   );

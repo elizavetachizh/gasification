@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import React, { useCallback, useState } from "react";
-import { OrderOriginal } from "@/src/lib/features/orders/ordersApi";
+import { useGetOrdersQuery } from "@/src/lib/features/orders/ordersApi";
 import SplitButton from "@/src/components/table/tableWithPagination/buttonGroup";
 import { DateConversion } from "@/src/utils/dateConversion";
 import AlertDialog from "@/src/components/dialogs/deleteAlertDialog";
@@ -29,18 +29,14 @@ import ToolbarComponent from "@/src/components/toolbar";
 import TablePaginationComponent from "@/src/components/table/tableWithPagination/pagination";
 import ButtonGroup from "@mui/material/ButtonGroup";
 import TableHeadComponent from "@/src/components/table/tableWithPagination/tableHead";
+import { useSelector } from "react-redux";
+import { RootState } from "@/src/lib/store";
 
 interface TableWithPaginationInterface {
   typeTable?: string;
-  orders?: OrderOriginal[];
-  count?: number;
-  isLoading: boolean;
-  isFetching: boolean;
   selected: number[];
   setSelected: React.Dispatch<React.SetStateAction<number[]>>;
-  status: string;
   onConfirmText?: string;
-  setStatus: React.Dispatch<React.SetStateAction<string>>;
   handleDeleteSelectedAction?: (
     selected: number[],
     setSelected: React.Dispatch<React.SetStateAction<number[]>>,
@@ -59,22 +55,12 @@ interface TableWithPaginationInterface {
   ) => Promise<void>;
   date?: string | null;
   setDateAction?: React.Dispatch<React.SetStateAction<string>>;
-  setPage: (page: number) => void;
-  page: number;
-  setPageSize: (pageSize: number) => void;
-  page_size: number;
 }
 
 export default function TableWithPagination({
   typeTable = "profile",
-  orders = [],
-  count = 0,
-  isLoading,
-  isFetching,
   selected,
   setSelected,
-  status,
-  setStatus,
   onConfirmText,
   handleDeleteSelectedAction,
   handleAgreeSelectedAction,
@@ -82,15 +68,20 @@ export default function TableWithPagination({
   handleAcceptSelectedAction,
   date = null,
   setDateAction,
-  setPage,
-  page,
-  setPageSize,
-  page_size,
 }: TableWithPaginationInterface) {
+  const [page, setPage] = useState(1);
+  const [page_size, setPageSize] = useState(10);
+  const [status, setStatus] = useState("created");
+  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+  const {
+    data: orders,
+    isLoading,
+    isFetching,
+  } = useGetOrdersQuery({ status, page, page_size }, { skip: !accessToken });
   const [open, setOpen] = useState<null | number>(null);
   const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked && orders) {
-      setSelected(orders.map((order) => order.id));
+      setSelected(orders?.result?.map((order) => order.id));
     } else {
       setSelected([]);
     }
@@ -118,7 +109,6 @@ export default function TableWithPagination({
           <TabsComponent
             status={status}
             setStatus={setStatus}
-            length={count || 0}
             onConfirmText={onConfirmText}
           />
           {isFetching ? (
@@ -202,11 +192,11 @@ export default function TableWithPagination({
                           <Checkbox
                             indeterminate={
                               selected.length > 0 &&
-                              selected.length < orders?.length
+                              selected.length < orders?.count
                             }
                             checked={
-                              orders?.length > 0 &&
-                              selected.length === orders?.length
+                              orders?.count > 0 &&
+                              selected.length === orders?.count
                             }
                             onChange={handleSelectAll}
                           />
@@ -234,7 +224,7 @@ export default function TableWithPagination({
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {orders?.map((order, index) => {
+                    {orders?.result?.map((order, index) => {
                       const labelId = `enhanced-table-checkbox-${index}`;
                       const numberRow =
                         page > 1 ? (page - 1) * page_size + 1 : 1;
@@ -337,7 +327,7 @@ export default function TableWithPagination({
                 </Table>
               </TableContainer>
               <TablePaginationComponent
-                count={count}
+                count={orders?.count}
                 page_size={page_size}
                 page={page}
                 setPage={setPage}

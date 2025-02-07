@@ -5,5 +5,7 @@ export const StatusConversion = (status: string | undefined) => {
       ? "Предложен перенос"
       : status === "agreed"
         ? "Одобрен перенос"
-        : "Согласована";
+        : status === "rejected"
+          ? "Перенос отклонен"
+          : "Согласована";
 };

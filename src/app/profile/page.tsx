@@ -43,7 +43,7 @@ function ProfilePage() {
   const { data: ordersAvailable, isLoading } = useGetOrdersAvailableQuery();
   const [createOrder, { isSuccess, error, isLoading: isLoadingCreateOrder }] =
     useCreateOrderMutation();
-  const { data: userData } = useGetUserQuery(undefined, {
+  const { data: userData, isLoading:isLoadingUserData } = useGetUserQuery(undefined, {
     skip: !accessToken,
   });
 

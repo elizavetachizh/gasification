@@ -1,42 +1,53 @@
 "use client";
 import { Tabs, Tab } from "@mui/material";
-import { showOrdersCount } from "@/src/utils/showOrdersCount";
 import React from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/src/lib/store";
+import {
+  useGetAcceptedOrdersCountQuery,
+  useGetCreatedOrdersCountQuery,
+  useGetOnConfirmOrdersCountQuery,
+} from "@/src/lib/features/orders/ordersApi";
 
 interface TabsInterface {
   status: string;
   setStatus: (status: string) => void;
-  length: number;
-  createdText?: string;
   onConfirmText?: string;
-  acceptedText?: string;
 }
 
 export default function TabsComponent({
   status,
   setStatus,
-  length,
-  createdText = "Новые заявки",
   onConfirmText = "Заявки на согласовании",
-  acceptedText = "Принятые заявки",
 }: TabsInterface) {
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     setStatus(newValue);
   };
 
+  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+  const { data: createdOrdersCount } = useGetCreatedOrdersCountQuery(
+    undefined,
+    { skip: !accessToken },
+  );
+  const { data: onConfirmOrdersCount } = useGetOnConfirmOrdersCountQuery(
+    undefined,
+    { skip: !accessToken },
+  );
+  const { data: acceptedOrdersCount } = useGetAcceptedOrdersCountQuery(
+    undefined,
+    { skip: !accessToken },
+  );
+
   return (
     <Tabs value={status} onChange={handleChange} centered>
-      <Tab
-        value={"created"}
-        label={`${createdText} ${showOrdersCount("created", status, length)}`}
-      />
+      <Tab value={"created"} label={`Новые заявки (${createdOrdersCount ?? 0})`} />
       <Tab
         value={"on_confirm"}
-        label={`${onConfirmText} ${showOrdersCount("on_confirm", status, length)}`}
+        label={`${onConfirmText} (${onConfirmOrdersCount ?? 0})`}
       />
       <Tab
         value={"accepted"}
-        label={`${acceptedText} ${showOrdersCount("accepted", status, length)}`}
+        label={`Принятые заявки (${acceptedOrdersCount ?? 0})`}
       />
     </Tabs>
   );

@@ -10,13 +10,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { PickersDayProps } from "@mui/x-date-pickers/PickersDay";
 import { DayCalendarSkeleton } from "@mui/x-date-pickers/DayCalendarSkeleton";
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Button,
-  FormControl,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, Button, FormControl, TextField, Typography } from "@mui/material";
 import {
   ConfigStatsDetailsInterface,
   useCreateExceptionDateMutation,
@@ -30,7 +24,7 @@ const initialValue = dayjs(new Date());
 type DayData = Record<string, number>;
 
 export default function SettingPage() {
-  const [createExceptionDate, { isSuccess, error }] =
+  const [createExceptionDate, { isSuccess, error, isLoading }] =
     useCreateExceptionDateMutation();
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [dayValues, setDayValues] = useState<DayData | undefined>({});
@@ -42,7 +36,7 @@ export default function SettingPage() {
     startOfMonth: dayjs().startOf("month").format("YYYY-MM-DD"),
     endOfMonth: dayjs().endOf("month").format("YYYY-MM-DD"),
   });
-  const { data: configStatsInfo, isLoading } = useGetConfigStatsQuery({
+  const { data: configStatsInfo, isLoading:isLoadingConfigStatsInfo } = useGetConfigStatsQuery({
     start_date: monthBoundaries.startOfMonth,
     end_date: monthBoundaries.endOfMonth,
   });
@@ -51,9 +45,10 @@ export default function SettingPage() {
     const newValue = parseInt(event.target.value) || 0;
     setInputValue(newValue);
   };
-
+  console.log(monthBoundaries.startOfMonth);
+  console.log(monthBoundaries.endOfMonth);
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoadingConfigStatsInfo) {
       // Преобразуем массив в объект
       const values = configStatsInfo?.result?.reduce(
         (acc: DayData, { date, order_count }: ConfigStatsDetailsInterface) => {
@@ -65,7 +60,7 @@ export default function SettingPage() {
       );
       setDayValues(values);
     }
-  }, [isLoading, configStatsInfo]);
+  }, [isLoadingConfigStatsInfo, configStatsInfo]);
 
   const renderDay = (
     props: PickersDayProps<Dayjs> & { highlightedDays?: number[] },
@@ -124,12 +119,17 @@ export default function SettingPage() {
     date: string,
     count: number | null,
   ) => {
-    await createExceptionDate({ on_date: date, order_count_per_day: count });
+    await createExceptionDate({
+      on_date: date,
+      order_count_per_day: count,
+    }).unwrap();
+    setSelectedDate("");
   };
 
   const handleMonthChange = (newMonth: Dayjs) => {
     const startOfMonth = newMonth.startOf("month").format("YYYY-MM-DD");
     const endOfMonth = newMonth.endOf("month").format("YYYY-MM-DD");
+    setSelectedDate("");
     setMonthBoundaries({ startOfMonth, endOfMonth });
   };
 
@@ -167,6 +167,7 @@ export default function SettingPage() {
                 sx={{ width: "400px", margin: "0 auto", maxHeight: "300px" }}
                 value={selectedDate ? dayjs(selectedDate) : null}
                 onChange={handleDaySelect}
+                disabled={isLoading}
                 onMonthChange={handleMonthChange} // Добавлен обработчик изменения месяца
                 defaultValue={initialValue}
                 renderLoading={() => <DayCalendarSkeleton />}
@@ -199,12 +200,12 @@ export default function SettingPage() {
             <Button
               variant="contained"
               size="small"
-              disabled={!selectedDate}
+              disabled={!selectedDate || isLoading}
               onClick={() =>
                 handleCreateExceptionDate(selectedDate, inputValue)
               }
             >
-              Сохранить
+              {isLoading ? "Пожалуйста, подождите" : "Сохранить"}
             </Button>
           </Box>
         </Box>

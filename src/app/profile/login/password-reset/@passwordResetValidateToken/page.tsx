@@ -16,6 +16,7 @@ import {
   OutlinedInput,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import CheckIcon from "@mui/icons-material/Check";
 import { useFormField } from "@/src/hooks/useFormField";
 import { useRouter } from "next/navigation";
 
@@ -45,7 +46,7 @@ export default function PasswordResetValidateToken() {
   const passwordField = useFormField({
     validate: (value) => /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(value),
     errorMessage:
-      "Пароль должен содержать не менее 8 символов, включать буквы, цифры и хотя бы один специальный символ",
+      "Пароль должен содержать не менее 8 символов, включать буквы и цифры",
   });
   const confirmPassword = useFormField({
     validate: (value) => value === passwordField.value,
@@ -69,9 +70,9 @@ export default function PasswordResetValidateToken() {
     }).unwrap();
     passwordField.reset();
     confirmPassword.reset();
-    if (isSuccess) await router.push("/profile/login");
+  setTimeout(() => router.push("/profile/login"), 1000);
   };
-  console.log(isSuccess);
+
   return errorPasswordResetValidateToken &&
     "status" in errorPasswordResetValidateToken &&
     (errorPasswordResetValidateToken.status === 400 ||
@@ -86,6 +87,12 @@ export default function PasswordResetValidateToken() {
       noValidate
       sx={{ mt: 1 }}
     >
+      {isSuccess && (
+        <Alert icon={<CheckIcon fontSize="inherit" />} severity="success">
+          Пароль был успешно изменен
+        </Alert>
+      )}
+      {error && <Alert severity="error">Слишком простой пароль</Alert>}
       <FormControl
         variant="outlined"
         fullWidth

@@ -3,15 +3,18 @@ import { useState } from "react";
 import AppBarComponent from "@/src/components/appBar";
 import DrawerComponent from "@/src/components/drawerComponent";
 
-export default function AppBarWithDrawerComponent() {
-  const [open, setOpen] = useState<boolean>(true);
-
+export default function AppBarWithDrawerComponent({
+  is_staff,
+}: {
+  is_staff?: boolean;
+}) {
+  const [open, setOpen] = useState<boolean>(false);
   return (
     <>
       {/* AppBar */}
-      <AppBarComponent open={open} setOpen={setOpen} />
+      <AppBarComponent is_staff={is_staff} open={open} setOpen={setOpen} />
       {/* Drawer */}
-      <DrawerComponent open={open} setOpen={setOpen} />
+      {is_staff && <DrawerComponent open={open} setOpen={setOpen} />}
     </>
   );
 }
