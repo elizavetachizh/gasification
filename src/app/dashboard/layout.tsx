@@ -1,4 +1,3 @@
-"use client";
 import * as React from "react";
 import WithAuthDashboard from "@/src/utils/withAuthDashboard";
 import ThemeModeContextProvider from "@/src/context/theme";

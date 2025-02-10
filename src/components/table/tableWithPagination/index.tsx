@@ -191,12 +191,12 @@ export default function TableWithPagination({
                         <TableCell>
                           <Checkbox
                             indeterminate={
-                              selected.length > 0 &&
-                              selected.length < orders?.count
+                              selected.length < orders?.count &&
+                              selected.length > 0
                             }
                             checked={
-                              orders?.count > 0 &&
-                              selected.length === orders?.count
+                              selected.length === orders?.count &&
+                              orders?.count > 0
                             }
                             onChange={handleSelectAll}
                           />

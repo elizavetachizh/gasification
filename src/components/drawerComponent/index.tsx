@@ -112,7 +112,10 @@ const DrawerComponent: React.FC<IAppBar> = ({ open, setOpen }) => {
             sx={{ display: "block" }}
             key={item.title}
             selected={selectedIndex === index}
-            onClick={() => handleListItemClick(index, item.path)}
+            onClick={() => {
+              setOpen(true);
+              handleListItemClick(index, item.path);
+            }}
           >
             <ListItemButton
               sx={[

@@ -43,7 +43,7 @@ function ProfilePage() {
   const { data: ordersAvailable, isLoading } = useGetOrdersAvailableQuery();
   const [createOrder, { isSuccess, error, isLoading: isLoadingCreateOrder }] =
     useCreateOrderMutation();
-  const { data: userData, isLoading:isLoadingUserData } = useGetUserQuery(undefined, {
+  const { data: userData } = useGetUserQuery(undefined, {
     skip: !accessToken,
   });
 
@@ -93,204 +93,211 @@ function ProfilePage() {
   return (
     <Box>
       <AppBarProfile />
-      <Container maxWidth={"xl"} component="main">
-        {userData?.counterparty ? (
-          <React.Fragment>
-            {isSuccess && (
-              <SuccessAlertComponent
-                isInitialOpen={isSuccess}
-                message={"Заявка успешно создана!"}
-              />
-            )}
+      {userData && (
+        <Container maxWidth={"xl"} component="main">
+          {userData?.counterparty ? (
+            <React.Fragment>
+              {isSuccess && (
+                <SuccessAlertComponent
+                  isInitialOpen={isSuccess}
+                  message={"Заявка успешно создана!"}
+                />
+              )}
 
-            {error && "data" in error && "selected_date" in error?.data && (
-              <ErrorAlertComponent
-                isInitialOpen={!!error}
-                message={` Ошибка при создании заявки: ${error?.data?.selected_date?.toString()}`}
-              />
-            )}
-            <Container>
-              <Card
-                variant="outlined"
-                sx={{
-                  marginTop: 8,
-                  maxHeight: "max-content",
-                  maxWidth: "100%",
-                  mx: "auto",
-                  // to make the demo resizable
-                  overflow: "auto",
-                  resize: "horizontal",
-                }}
-              >
-                <CardContent
+              {error && "data" in error && "selected_date" in error?.data && (
+                <ErrorAlertComponent
+                  isInitialOpen={!!error}
+                  message={` Ошибка при создании заявки: ${error?.data?.selected_date?.toString()}`}
+                />
+              )}
+              <Container>
+                <Card
+                  variant="outlined"
                   sx={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(2, minmax(80px, 1fr))",
-                    gap: 1.5,
+                    marginTop: 8,
+                    maxHeight: "max-content",
+                    maxWidth: "100%",
+                    mx: "auto",
+                    // to make the demo resizable
+                    overflow: "auto",
+                    resize: "horizontal",
                   }}
                 >
-                  {isLoading ? (
-                    <CircularProgress size="3rem" />
-                  ) : ordersAvailable?.status === true ? (
-                    <React.Fragment>
-                      <FormControl>
-                        <FormLabel>ФИО заявителя</FormLabel>
-                        <TextField
-                          size="small"
-                          type={"text"}
-                          placeholder="Иванов Иван Иванович"
-                          value={nameField.value}
-                          onChange={nameField.handleChange}
-                          error={nameField.error}
-                          helperText={nameField.helperText}
-                        />
-                      </FormControl>
-                      <FormControl>
-                        <FormLabel>Контактный мобильный телефон</FormLabel>
-                        <TextField
-                          size="small"
-                          type={"text"}
-                          placeholder="375444640092"
-                          value={phoneField.value}
-                          onChange={phoneField.handleChange}
-                          error={phoneField.error}
-                          required={true}
-                          helperText={phoneField.helperText}
-                        />
-                      </FormControl>
-                      <OrderTypeSelect
-                        value={orderType}
-                        onChange={setOrderType}
-                      />
-                      <ConstructionObjectSelect
-                        value={constructionObject.construction_object}
-                        onChange={setConstructionObject}
-                      />
-                      <FormControl sx={{ gridColumn: "1/-1" }}>
-                        <FormLabel>Комплекс работ</FormLabel>
-                        {constructionObject.work_packages?.length ? (
+                  <CardContent
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(2, minmax(80px, 1fr))",
+                      gap: 1.5,
+                    }}
+                  >
+                    {isLoading ? (
+                      <CircularProgress size="3rem" />
+                    ) : ordersAvailable?.status === true ? (
+                      <React.Fragment>
+                        <FormControl>
+                          <FormLabel>ФИО заявителя</FormLabel>
                           <TextField
                             size="small"
-                            margin="dense"
-                            disabled={true}
-                            value={constructionObject.work_packages.map(
-                              (workPackage) => `${workPackage}`,
-                            )}
                             type={"text"}
-                            placeholder="Комплекс работ"
+                            placeholder="Иванов Иван Иванович"
+                            value={nameField.value}
+                            onChange={nameField.handleChange}
+                            error={nameField.error}
+                            helperText={nameField.helperText}
                           />
-                        ) : (
+                        </FormControl>
+                        <FormControl>
+                          <FormLabel>Контактный мобильный телефон</FormLabel>
                           <TextField
                             size="small"
-                            disabled={true}
                             type={"text"}
+                            placeholder="375444640092"
+                            value={phoneField.value}
+                            onChange={phoneField.handleChange}
+                            error={phoneField.error}
+                            required={true}
+                            helperText={phoneField.helperText}
+                          />
+                        </FormControl>
+                        <OrderTypeSelect
+                          value={orderType}
+                          onChange={setOrderType}
+                        />
+                        <ConstructionObjectSelect
+                          value={constructionObject.construction_object}
+                          onChange={setConstructionObject}
+                        />
+                        <FormControl sx={{ gridColumn: "1/-1" }}>
+                          <FormLabel>Комплекс работ</FormLabel>
+                          {constructionObject.work_packages?.length ? (
+                            <TextField
+                              size="small"
+                              margin="dense"
+                              disabled={true}
+                              value={constructionObject.work_packages.map(
+                                (workPackage) => `${workPackage}`,
+                              )}
+                              type={"text"}
+                              placeholder="Комплекс работ"
+                            />
+                          ) : (
+                            <TextField
+                              size="small"
+                              disabled={true}
+                              type={"text"}
+                              placeholder="Данные по коду объекта"
+                            />
+                          )}
+                        </FormControl>
+                        <FormControl>
+                          <FormLabel>Дата</FormLabel>
+                          <LocalizationProvider
+                            dateAdapter={AdapterDayjs}
+                            adapterLocale="ru"
+                          >
+                            <DatePicker
+                              value={selectedDate}
+                              onChange={(newValue) => setSelectedDate(newValue)}
+                              shouldDisableDate={(date) =>
+                                !isDateAvailable(date)
+                              }
+                              slots={{
+                                textField: TextField, // Используем TextField для кастомизации
+                              }}
+                              slotProps={{
+                                textField: {
+                                  inputProps: {
+                                    readOnly: true,
+                                    required: true,
+                                  }, // Блокировка ручного ввода
+                                  size: "small",
+                                  error: !selectedDate,
+                                },
+                              }}
+                            />
+                          </LocalizationProvider>
+                        </FormControl>
+                        <FormControl>
+                          <FormLabel>Адрес объекта</FormLabel>
+                          <TextField
+                            size="small"
+                            type={"text"}
+                            value={constructionObject.address}
+                            disabled={true}
                             placeholder="Данные по коду объекта"
                           />
-                        )}
-                      </FormControl>
-                      <FormControl>
-                        <FormLabel>Дата</FormLabel>
-                        <LocalizationProvider
-                          dateAdapter={AdapterDayjs}
-                          adapterLocale="ru"
-                        >
-                          <DatePicker
-                            value={selectedDate}
-                            onChange={(newValue) => setSelectedDate(newValue)}
-                            shouldDisableDate={(date) => !isDateAvailable(date)}
-                            slots={{
-                              textField: TextField, // Используем TextField для кастомизации
-                            }}
-                            slotProps={{
-                              textField: {
-                                inputProps: { readOnly: true, required: true }, // Блокировка ручного ввода
-                                size: "small",
-                                error: !selectedDate,
-                              },
-                            }}
+                        </FormControl>
+                        <FormControl>
+                          <FormControlLabel
+                            control={<Checkbox />}
+                            label={'Объект УП "МИНГАЗ"'}
                           />
-                        </LocalizationProvider>
-                      </FormControl>
-                      <FormControl>
-                        <FormLabel>Адрес объекта</FormLabel>
-                        <TextField
-                          size="small"
-                          type={"text"}
-                          value={constructionObject.address}
-                          disabled={true}
-                          placeholder="Данные по коду объекта"
-                        />
-                      </FormControl>
-                      <FormControl>
-                        <FormControlLabel
-                          control={<Checkbox />}
-                          label={'Объект УП "МИНГАЗ"'}
-                        />
-                      </FormControl>
-                      <CardActions sx={{ gridColumn: "1/-1" }}>
-                        <Button
-                          disabled={
-                            isLoadingCreateOrder ||
-                            nameField.error ||
-                            phoneField.error ||
-                            !(orderType && constructionObject && selectedDate)
-                          }
-                          onClick={handleSubmit}
-                          variant="contained"
-                        >
-                          {isLoadingCreateOrder
-                            ? "Пожалуйста, подождите"
-                            : "Оставить заявку"}
-                        </Button>
-                      </CardActions>
-                    </React.Fragment>
-                  ) : (
-                    <p>
-                      Прием подачи заявок закрыт. Пожалуйста, попробуйте позже
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            </Container>
+                        </FormControl>
+                        <CardActions sx={{ gridColumn: "1/-1" }}>
+                          <Button
+                            disabled={
+                              isLoadingCreateOrder ||
+                              nameField.error ||
+                              phoneField.error ||
+                              !(orderType && constructionObject && selectedDate)
+                            }
+                            onClick={handleSubmit}
+                            variant="contained"
+                          >
+                            {isLoadingCreateOrder
+                              ? "Пожалуйста, подождите"
+                              : "Оставить заявку"}
+                          </Button>
+                        </CardActions>
+                      </React.Fragment>
+                    ) : (
+                      <p>
+                        Прием подачи заявок закрыт. Пожалуйста, попробуйте позже
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              </Container>
 
-            <Container maxWidth={"xl"} sx={{ p: 0, px: 0 }}>
-              <Card
-                variant="outlined"
-                sx={{
-                  marginTop: 8,
-                  marginBottom: 4,
-                  maxHeight: "max-content",
-                  maxWidth: "100%",
-                  mx: "auto",
-                  // to make the demo resizable
-                  overflow: "auto",
-                  resize: "horizontal",
-                }}
-              >
-                <TableProfile />
-              </Card>
-            </Container>
-          </React.Fragment>
-        ) : userData?.is_active === false ? (
-          <Typography
-            sx={{ marginTop: "30px" }}
-            variant="h4"
-            gutterBottom
-            align={"center"}
-          >
-            Ваша учетная запись заблокирована. Обратитесь к администратору.
-          </Typography>
-        ) : (
-          <Typography
-            sx={{ marginTop: "30px" }}
-            variant="h4"
-            gutterBottom
-            align={"center"}
-          >
-            Недостаточно прав доступа. Обратитесь к администратору.
-          </Typography>
-        )}
-      </Container>
+              <Container maxWidth={"xl"} sx={{ p: 0, px: 0 }}>
+                <Card
+                  variant="outlined"
+                  sx={{
+                    marginTop: 8,
+                    marginBottom: 4,
+                    maxHeight: "max-content",
+                    maxWidth: "100%",
+                    mx: "auto",
+                    // to make the demo resizable
+                    overflow: "auto",
+                    resize: "horizontal",
+                  }}
+                >
+                  <TableProfile />
+                </Card>
+              </Container>
+            </React.Fragment>
+          ) : userData?.is_active === false ? (
+            <Typography
+              sx={{ marginTop: "30px" }}
+              variant="h4"
+              gutterBottom
+              align={"center"}
+            >
+              Ваша учетная запись заблокирована. Обратитесь к администратору.
+            </Typography>
+          ) : (
+            <Typography
+              sx={{ marginTop: "30px" }}
+              variant="h4"
+              gutterBottom
+              align={"center"}
+            >
+              Недостаточно прав доступа. Обратитесь к администратору.
+            </Typography>
+          )}
+        </Container>
+      )}
     </Box>
   );
 }

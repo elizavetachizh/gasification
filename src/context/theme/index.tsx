@@ -1,3 +1,4 @@
+"use client";
 // Контекст для управления темой
 import { createContext, useContext, useState } from "react";
 import * as React from "react";
